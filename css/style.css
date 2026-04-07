@@ -416,6 +416,20 @@ input[type="url"]:focus-visible {
 }
 
 
+/* ── Timer done pulse animation ── */
+@keyframes timerDonePulse {
+  0%   { color: var(--color-primary); transform: scale(1); }
+  20%  { color: #7FB77E; transform: scale(1.08); text-shadow: 0 0 20px rgba(127,183,126,0.7); }
+  40%  { color: var(--color-primary); transform: scale(1); }
+  60%  { color: #7FB77E; transform: scale(1.05); text-shadow: 0 0 14px rgba(127,183,126,0.5); }
+  80%  { color: var(--color-primary); transform: scale(1); }
+  100% { color: var(--color-primary); transform: scale(1); text-shadow: none; }
+}
+
+#timer-display.timer-done-pulse {
+  animation: timerDonePulse 1.2s ease both;
+}
+
 /* =============================================================================
    10. To-Do List
    Requirements: 5.4, 5.5, 5.6

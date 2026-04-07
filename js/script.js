@@ -162,7 +162,75 @@ export function initGreeting() {
   }
 }
 
-// ─── Pomodoro Timer ──────────────────────────────────────────────────────────
+/**
+ * Plays a short, pleasant two-tone chime using the Web Audio API.
+ * No external files needed — synthesised entirely in the browser.
+ */
+function playDoneChime() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playTone(freq, startTime, duration, gainVal) {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, startTime);
+      gain.gain.setValueAtTime(0, startTime);
+      gain.gain.linearRampToValueAtTime(gainVal, startTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+      osc.start(startTime);
+      osc.stop(startTime + duration);
+    }
+
+    // Two ascending tones — cheerful "ding-dong"
+    playTone(523.25, ctx.currentTime,        0.35, 0.4); // C5
+    playTone(783.99, ctx.currentTime + 0.22, 0.5,  0.35); // G5
+  } catch (e) {
+    // Audio not available — silently ignore
+  }
+}
+
+/**
+ * Requests browser notification permission if not already granted.
+ * Fires a notification when the Pomodoro session ends.
+ */
+function notifyTimerDone() {
+  if (!('Notification' in window)) return;
+
+  function send() {
+    new Notification('🍅 Pomodoro complete!', {
+      body: 'Great focus session. Time for a break!',
+      icon: '', // no external icon needed
+    });
+  }
+
+  if (Notification.permission === 'granted') {
+    send();
+  } else if (Notification.permission !== 'denied') {
+    Notification.requestPermission().then(p => { if (p === 'granted') send(); });
+  }
+}
+
+/**
+ * Triggers the end-of-session celebration:
+ * - Visual pulse on the timer display
+ * - Chime sound
+ * - Browser notification
+ */
+function onTimerDone() {
+  playDoneChime();
+  notifyTimerDone();
+
+  const display = document.getElementById('timer-display');
+  if (display) {
+    display.classList.remove('timer-done-pulse');
+    void display.offsetWidth; // reflow to restart animation
+    display.classList.add('timer-done-pulse');
+    display.addEventListener('animationend', () => display.classList.remove('timer-done-pulse'), { once: true });
+  }
+}
 
 /** @type {number} Remaining seconds on the timer (default 25 minutes) */
 export let timerSeconds = 1500;
@@ -192,6 +260,7 @@ export function tick() {
     timerIntervalId = null;
     const btnStart = document.getElementById('btn-start');
     if (btnStart) btnStart.disabled = false;
+    onTimerDone();
     return;
   }
   timerSeconds -= 1;
