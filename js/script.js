@@ -322,6 +322,51 @@ export function initPomodoro() {
   if (btnReset) btnReset.addEventListener('click', resetTimer);
 }
 
+// ─── Confirm Dialog ──────────────────────────────────────────────────────────
+
+/**
+ * Shows a cute custom confirm dialog and resolves with true (confirmed) or false (cancelled).
+ * @param {string} message - The question to display
+ * @returns {Promise<boolean>}
+ */
+function confirmDelete(message = 'Delete this item?') {
+  return new Promise(resolve => {
+    const overlay  = document.getElementById('confirm-overlay');
+    const msgEl    = document.getElementById('confirm-msg');
+    const btnOk    = document.getElementById('confirm-ok');
+    const btnCancel = document.getElementById('confirm-cancel');
+    if (!overlay || !btnOk || !btnCancel) { resolve(true); return; }
+
+    if (msgEl) msgEl.textContent = message;
+    overlay.hidden = false;
+
+    // Focus the cancel button by default (safer)
+    btnCancel.focus();
+
+    function cleanup(result) {
+      overlay.hidden = true;
+      btnOk.removeEventListener('click', onOk);
+      btnCancel.removeEventListener('click', onCancel);
+      overlay.removeEventListener('click', onBackdrop);
+      document.removeEventListener('keydown', onKey);
+      resolve(result);
+    }
+
+    const onOk      = () => cleanup(true);
+    const onCancel  = () => cleanup(false);
+    const onBackdrop = (e) => { if (e.target === overlay) cleanup(false); };
+    const onKey     = (e) => {
+      if (e.key === 'Escape') cleanup(false);
+      if (e.key === 'Enter' && document.activeElement === btnOk) cleanup(true);
+    };
+
+    btnOk.addEventListener('click', onOk);
+    btnCancel.addEventListener('click', onCancel);
+    overlay.addEventListener('click', onBackdrop);
+    document.addEventListener('keydown', onKey);
+  });
+}
+
 // ─── Todo List ───────────────────────────────────────────────────────────────
 
 /** @type {Array<{id: string, text: string, completed: boolean}>} In-memory task array */
@@ -390,6 +435,7 @@ export function toggleTask(id) {
     // Only celebrate when completing, not when unchecking
     if (task.completed) celebrateTask(li);
   }
+  updateProgress();
 }
 
 /**
@@ -421,13 +467,19 @@ export function editTask(id, newText) {
 
 /**
  * Removes the task with the given id from the array and the DOM.
+ * Asks for confirmation first.
  * @param {string} id
  */
-export function deleteTask(id) {
+export async function deleteTask(id) {
+  const task = tasks.find(t => t.id === id);
+  const label = task ? `"${task.text}"` : 'this task';
+  const confirmed = await confirmDelete(`Delete ${label}?`);
+  if (!confirmed) return;
   tasks = tasks.filter(t => t.id !== id);
   saveTasks(tasks);
   const li = document.querySelector(`[data-task-id="${id}"]`);
   if (li) li.remove();
+  updateProgress();
 }
 
 /**
@@ -620,13 +672,60 @@ function startInlineEdit(li, id) {
 }
 
 /**
- * Clears #todo-list and re-renders all tasks from the in-memory array.
+ * Updates the progress bar and score display based on current tasks array.
+ * Shows emoji that evolves with progress, animates the fill, bumps emoji on change.
  */
+function updateProgress() {
+  const total     = tasks.length;
+  const done      = tasks.filter(t => t.completed).length;
+  const pct       = total === 0 ? 0 : Math.round((done / total) * 100);
+
+  const progressEl = document.getElementById('todo-progress');
+  const fillEl     = document.getElementById('progress-fill');
+  const labelEl    = document.getElementById('progress-label');
+  const pctEl      = document.getElementById('progress-pct');
+  const emojiEl    = document.getElementById('progress-emoji');
+  const trackEl    = document.querySelector('.progress-track');
+
+  if (!progressEl) return;
+
+  // Hide widget when no tasks
+  if (total === 0) { progressEl.hidden = true; return; }
+  progressEl.hidden = false;
+
+  // Emoji ladder — gets more excited as progress grows
+  const emoji =
+    pct === 100 ? '🎉' :
+    pct >= 80   ? '🔥' :
+    pct >= 60   ? '💪' :
+    pct >= 40   ? '😊' :
+    pct >= 20   ? '🌿' :
+                  '🌱';
+
+  if (emojiEl && emojiEl.textContent !== emoji) {
+    emojiEl.textContent = emoji;
+    emojiEl.classList.remove('bump');
+    void emojiEl.offsetWidth;
+    emojiEl.classList.add('bump');
+    emojiEl.addEventListener('animationend', () => emojiEl.classList.remove('bump'), { once: true });
+  }
+
+  if (labelEl) labelEl.textContent = `${done} / ${total} done`;
+  if (pctEl)   pctEl.textContent   = `${pct}%`;
+  if (fillEl) {
+    fillEl.style.width = `${pct}%`;
+    fillEl.classList.toggle('all-done', pct === 100);
+  }
+  if (trackEl) trackEl.setAttribute('aria-valuenow', pct);
+}
+
+
 export function renderTasks() {
   const list = document.getElementById('todo-list');
   if (!list) return;
   list.innerHTML = '';
   tasks.forEach(task => list.appendChild(buildTaskElement(task)));
+  updateProgress();
 }
 
 /**
@@ -658,6 +757,7 @@ export function initTodoList() {
       if (input) input.value = '';
       const list = document.getElementById('todo-list');
       if (list) list.appendChild(buildTaskElement(result));
+      updateProgress();
     }
   }
 
@@ -717,9 +817,14 @@ export function addLink(name, url) {
 
 /**
  * Removes the link with the given id from the array, persists, and removes its DOM element.
+ * Asks for confirmation first.
  * @param {string} id
  */
-export function deleteLink(id) {
+export async function deleteLink(id) {
+  const link = links.find(l => l.id === id);
+  const label = link ? `"${link.name}"` : 'this link';
+  const confirmed = await confirmDelete(`Remove ${label}?`);
+  if (!confirmed) return;
   links = links.filter(l => l.id !== id);
   saveLinks(links);
   const card = document.querySelector(`[data-link-id="${id}"]`);
@@ -728,6 +833,7 @@ export function deleteLink(id) {
 
 /**
  * Builds a single .link-card element for a link.
+ * The entire card is a clickable <a> tag; delete button sits on top.
  * @param {{id: string, name: string, url: string}} link
  * @returns {HTMLDivElement}
  */
@@ -740,14 +846,19 @@ function buildLinkCard(link) {
   a.href = link.url;
   a.target = '_blank';
   a.rel = 'noopener noreferrer';
+  a.className = 'link-card-anchor';
   a.textContent = link.name;
+  a.title = link.url;
 
   const btnDelete = document.createElement('button');
   btnDelete.className = 'btn-delete-link';
   btnDelete.setAttribute('aria-label', 'Delete link');
   btnDelete.title = 'Remove link';
   btnDelete.innerHTML = SVG_LINK_DEL;
-  btnDelete.addEventListener('click', () => deleteLink(link.id));
+  btnDelete.addEventListener('click', (e) => {
+    e.stopPropagation(); // prevent card click
+    deleteLink(link.id);
+  });
 
   card.append(a, btnDelete);
   return card;
@@ -855,11 +966,16 @@ export function applyTheme(theme) {
 
 /**
  * Reads the current theme from the <html> element and toggles it.
- * Calls applyTheme with the new value.
+ * Adds .theme-transitioning to <html> for the duration of the CSS transition
+ * so all elements animate smoothly, then removes it to keep page-load instant.
  */
 export function toggleTheme() {
-  const current = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+  const html = document.documentElement;
+  html.classList.add('theme-transitioning');
+  const current = html.dataset.theme === 'dark' ? 'dark' : 'light';
   applyTheme(current === 'dark' ? 'light' : 'dark');
+  // Remove after transition completes (matches 0.35s in CSS)
+  setTimeout(() => html.classList.remove('theme-transitioning'), 400);
 }
 
 /**

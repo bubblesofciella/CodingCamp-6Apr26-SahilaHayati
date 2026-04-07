@@ -71,6 +71,19 @@
     <!-- Todo List -->
     <section aria-labelledby="todo-heading">
       <h2 id="todo-heading">To-Do List</h2>
+
+      <!-- Progress score -->
+      <div id="todo-progress" aria-label="Task progress" hidden>
+        <div class="progress-header">
+          <span id="progress-emoji" aria-hidden="true">🌱</span>
+          <span id="progress-label">0 / 0 done</span>
+          <span id="progress-pct">0%</span>
+        </div>
+        <div class="progress-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+          <div id="progress-fill"></div>
+        </div>
+      </div>
+
       <div class="todo-input-row">
         <label for="todo-input" class="sr-only">New task</label>
         <input
@@ -118,6 +131,18 @@
       <div id="links-container" aria-label="Quick links"></div>
     </section>
   </main>
+
+  <!-- Custom confirm dialog -->
+  <div id="confirm-overlay" class="confirm-overlay" hidden aria-modal="true" role="dialog" aria-labelledby="confirm-msg">
+    <div class="confirm-box">
+      <span class="confirm-icon" aria-hidden="true">🗑️</span>
+      <p id="confirm-msg" class="confirm-msg">Delete this item?</p>
+      <div class="confirm-actions">
+        <button id="confirm-cancel" class="confirm-btn confirm-btn--cancel">Cancel</button>
+        <button id="confirm-ok"     class="confirm-btn confirm-btn--ok">Delete</button>
+      </div>
+    </div>
+  </div>
 
   <script type="module" src="js/script.js"></script>
 </body>
