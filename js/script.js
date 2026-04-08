@@ -776,6 +776,19 @@ function updateProgress() {
 
 const TASK_VISIBLE_LIMIT = 5;
 let taskListExpanded = false;
+let taskSortMode = 'all'; // 'all' | 'active' | 'done' | 'az'
+
+/**
+ * Returns a sorted/filtered view of tasks based on current sort mode.
+ * Does NOT mutate the original tasks array.
+ */
+function getSortedTasks() {
+  let list = [...tasks];
+  if (taskSortMode === 'active') return list.filter(t => !t.completed);
+  if (taskSortMode === 'done')   return list.filter(t => t.completed);
+  if (taskSortMode === 'az')     return list.sort((a, b) => a.text.localeCompare(b.text));
+  return list; // 'all' — original insertion order
+}
 
 /**
  * Applies the collapsed/expanded visual state to task items beyond the limit.
@@ -814,7 +827,7 @@ export function renderTasks() {
   const list = document.getElementById('todo-list');
   if (!list) return;
   list.innerHTML = '';
-  tasks.forEach(task => list.appendChild(buildTaskElement(task)));
+  getSortedTasks().forEach(task => list.appendChild(buildTaskElement(task)));
   applyTaskListVisibility();
   updateProgress();
 }
@@ -875,6 +888,19 @@ export function initTodoList() {
       applyTaskListVisibility();
     });
   }
+
+  // Wire sort pills
+  document.querySelectorAll('.sort-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      taskSortMode = pill.dataset.sort;
+      taskListExpanded = false; // reset expand on sort change
+      document.querySelectorAll('.sort-pill').forEach(p => {
+        p.classList.toggle('active', p === pill);
+        p.setAttribute('aria-pressed', String(p === pill));
+      });
+      renderTasks();
+    });
+  });
 }
 
 // ─── Quick Links ─────────────────────────────────────────────────────────────
