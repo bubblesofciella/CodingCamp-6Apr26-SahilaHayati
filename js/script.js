@@ -103,19 +103,35 @@ export function saveName(name) {
 }
 
 /**
- * Initialises the greeting widget:
- * - Shows greeting text; clicking it reveals the name input
- * - Saves name on Save button click or Enter key; hides input on blur/Escape
+ * Initialises the greeting widget.
+ * - No name saved: shows a pulsing "Tap to set your name" CTA
+ * - Name saved: shows greeting with subtle edit hint
+ * - Clicking/tapping anywhere on the wrap opens the name input
  */
 export function initGreeting() {
-  const greetingEl = document.getElementById('greeting');
+  const greetingEl   = document.getElementById('greeting');
   const greetingWrap = document.getElementById('greeting-wrap');
-  const nameEditRow = document.getElementById('name-edit-row');
-  const nameInput = document.getElementById('name-input');
-  const btnSave = document.getElementById('btn-save-name');
+  const editHint     = document.getElementById('greeting-edit-hint');
+  const nameEditRow  = document.getElementById('name-edit-row');
+  const nameInput    = document.getElementById('name-input');
+  const btnSave      = document.getElementById('btn-save-name');
 
+  /** Refresh greeting text and CTA state based on current name */
   function updateGreeting(name) {
-    if (greetingEl) greetingEl.textContent = buildGreetingText(new Date().getHours(), name);
+    const hasName = name && name.trim();
+    if (greetingEl) {
+      greetingEl.textContent = hasName
+        ? buildGreetingText(new Date().getHours(), name)
+        : getGreeting(new Date().getHours());
+    }
+    // Toggle no-name CTA mode
+    if (greetingWrap) {
+      greetingWrap.classList.toggle('no-name', !hasName);
+    }
+    // Edit hint: always visible on mobile (no hover), subtle on desktop
+    if (editHint) {
+      editHint.textContent = hasName ? '✎' : '';
+    }
   }
 
   function showNameInput() {
@@ -124,10 +140,13 @@ export function initGreeting() {
     nameEditRow.hidden = false;
     nameInput.focus();
     nameInput.select();
+    if (greetingWrap) greetingWrap.classList.remove('no-name');
   }
 
   function hideNameInput() {
     if (nameEditRow) nameEditRow.hidden = true;
+    // Re-evaluate CTA state after hiding
+    updateGreeting(loadName());
   }
 
   function commitName() {
@@ -140,7 +159,6 @@ export function initGreeting() {
   // Initial render
   updateGreeting(loadName());
 
-  // Click or keyboard on greeting opens name input
   if (greetingWrap) {
     greetingWrap.addEventListener('click', showNameInput);
     greetingWrap.addEventListener('keydown', e => {
@@ -155,7 +173,6 @@ export function initGreeting() {
       if (e.key === 'Enter') commitName();
       if (e.key === 'Escape') { saveName(nameInput.value.trim()); hideNameInput(); }
     });
-    // Blur: commit after short delay (allows save button click to fire first)
     nameInput.addEventListener('blur', () => setTimeout(() => {
       if (!nameEditRow?.hidden) commitName();
     }, 150));
@@ -831,10 +848,17 @@ export async function deleteLink(id) {
   if (card) card.remove();
 }
 
+// Default quick links seeded on first load (only if localStorage is empty)
+const DEFAULT_LINKS = [
+  { name: 'YouTube',   url: 'https://youtube.com',    color: '#FF0000', icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.7 15.5V8.5l6.3 3.5-6.3 3.5z"/></svg>` },
+  { name: 'W3Schools', url: 'https://w3schools.com',  color: '#04AA6D', icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M1.5 0l2.3 20.4L12 24l8.2-3.6L22.5 0zm15.2 7H7.8l.3 2.7h8.3l-.9 8.1L12 19l-3.5-1.2-.2-2.8h2.6l.1 1.4 1 .3 1-.3.1-1.7H7.4L6.7 7h10.3z"/></svg>` },
+  { name: 'GitHub',    url: 'https://github.com',     color: '#24292e', icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.03c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.13 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.83.57C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>` },
+  { name: 'MDN Docs',  url: 'https://developer.mozilla.org', color: '#0078D4', icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm0 2c5.52 0 10 4.48 10 10s-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm-1 5v2H7v2h4v2H7v2h4v2h2v-2h4v-2h-4v-2h4V9h-4V7h-2z"/></svg>` },
+];
+
 /**
- * Builds a single .link-card element for a link.
- * The entire card is a clickable <a> tag; delete button sits on top.
- * @param {{id: string, name: string, url: string}} link
+ * Builds a single iOS-style link card with colored icon.
+ * @param {{id: string, name: string, url: string, color?: string, icon?: string}} link
  * @returns {HTMLDivElement}
  */
 function buildLinkCard(link) {
@@ -842,13 +866,31 @@ function buildLinkCard(link) {
   card.className = 'link-card';
   card.dataset.linkId = link.id;
 
+  // Colored icon bubble
+  const iconBubble = document.createElement('div');
+  iconBubble.className = 'link-icon-bubble';
+  iconBubble.style.setProperty('--link-color', link.color || 'var(--color-primary)');
+
+  if (link.icon) {
+    iconBubble.innerHTML = link.icon;
+  } else {
+    // Fallback: first letter of name
+    iconBubble.textContent = (link.name || '?')[0].toUpperCase();
+    iconBubble.classList.add('link-icon-letter');
+  }
+
   const a = document.createElement('a');
   a.href = link.url;
   a.target = '_blank';
   a.rel = 'noopener noreferrer';
   a.className = 'link-card-anchor';
-  a.textContent = link.name;
   a.title = link.url;
+
+  const nameEl = document.createElement('span');
+  nameEl.className = 'link-card-name';
+  nameEl.textContent = link.name;
+
+  a.appendChild(nameEl);
 
   const btnDelete = document.createElement('button');
   btnDelete.className = 'btn-delete-link';
@@ -856,11 +898,11 @@ function buildLinkCard(link) {
   btnDelete.title = 'Remove link';
   btnDelete.innerHTML = SVG_LINK_DEL;
   btnDelete.addEventListener('click', (e) => {
-    e.stopPropagation(); // prevent card click
+    e.stopPropagation();
     deleteLink(link.id);
   });
 
-  card.append(a, btnDelete);
+  card.append(iconBubble, a, btnDelete);
   return card;
 }
 
@@ -884,6 +926,19 @@ export function renderLinks() {
  */
 export function initQuickLinks() {
   links = loadLinks();
+
+  // Seed default links on first load (when localStorage is empty)
+  if (links.length === 0) {
+    links = DEFAULT_LINKS.map(d => ({
+      id: crypto.randomUUID(),
+      name: d.name,
+      url: d.url,
+      color: d.color,
+      icon: d.icon,
+    }));
+    saveLinks(links);
+  }
+
   renderLinks();
 
   const nameInput = document.getElementById('link-name-input');
@@ -894,8 +949,9 @@ export function initQuickLinks() {
 
   if (btnAdd) {
     btnAdd.addEventListener('click', () => {
-      const name = nameInput ? nameInput.value : '';
-      const url = urlInput ? urlInput.value : '';
+      const name = nameInput ? nameInput.value.trim() : '';
+      const url = urlInput ? urlInput.value.trim() : '';
+      if (!name) { if (errorEl) errorEl.textContent = 'Link name cannot be empty.'; return; }
       const result = addLink(name, url);
       if (result === null) {
         if (errorEl) errorEl.textContent = 'URL must start with http:// or https://';

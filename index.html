@@ -16,8 +16,9 @@
         <div id="date"></div>
         <!-- Greeting shown by default; click to edit name -->
         <div id="greeting-wrap">
-          <span id="greeting" title="Click to set your name" tabindex="0" role="button" aria-label="Greeting — click to edit your name"></span>
-          <span id="greeting-edit-hint">✎</span>
+          <span id="greeting" tabindex="0" role="button" aria-label="Greeting — tap to set your name"></span>
+          <span id="greeting-edit-hint" aria-hidden="true"></span>
+          <span id="greeting-cta" aria-hidden="true">Tap to set your name ✏️</span>
         </div>
         <!-- Name input hidden until user clicks greeting -->
         <div id="name-edit-row" hidden>
@@ -145,5 +146,17 @@
   </div>
 
   <script type="module" src="js/script.js"></script>
+
+  <!-- Custom confirm dialog -->
+  <div id="confirm-overlay" class="confirm-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="confirm-msg">
+    <div class="confirm-box">
+      <span class="confirm-icon" aria-hidden="true">🗑️</span>
+      <p id="confirm-msg" class="confirm-msg">Delete this item?</p>
+      <div class="confirm-actions">
+        <button id="confirm-cancel" class="confirm-btn confirm-btn--cancel">Cancel</button>
+        <button id="confirm-ok"     class="confirm-btn confirm-btn--ok">Delete</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

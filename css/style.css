@@ -188,6 +188,21 @@ header {
   align-items: center;
   gap: calc(var(--space) * 0.75);
   cursor: pointer;
+  border-radius: 8px;
+  padding: 2px 4px;
+  transition: background-color var(--transition);
+  /* Make tap target large enough on mobile */
+  min-height: 36px;
+}
+
+#greeting-wrap:hover,
+#greeting-wrap:focus-visible {
+  background-color: rgba(127, 183, 126, 0.1);
+  outline: none;
+}
+
+#greeting-wrap:focus-visible {
+  outline: 2px solid var(--color-accent);
 }
 
 #greeting {
@@ -198,12 +213,11 @@ header {
   transition: border-color var(--transition);
 }
 
-#greeting-wrap:hover #greeting,
-#greeting-wrap:focus-within #greeting {
+#greeting-wrap:hover #greeting {
   border-bottom-color: var(--color-primary);
 }
 
-/* Small pencil hint icon next to greeting */
+/* Small pencil hint — desktop hover only */
 #greeting-edit-hint {
   font-size: 0.75rem;
   color: var(--text-secondary);
@@ -214,6 +228,50 @@ header {
 
 #greeting-wrap:hover #greeting-edit-hint {
   opacity: 1;
+}
+
+/* CTA label — shown only when no name is set (.no-name class) */
+#greeting-cta {
+  display: none;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: rgba(127, 183, 126, 0.12);
+  border: 1.5px dashed var(--color-primary);
+  border-radius: 20px;
+  padding: 3px 10px;
+  white-space: nowrap;
+  animation: ctaPulse 2s ease-in-out 0.8s 3; /* pulses 3 times then stops */
+}
+
+#greeting-wrap.no-name #greeting-cta {
+  display: inline-block;
+}
+
+/* Hide the dashed underline on greeting when CTA is showing */
+#greeting-wrap.no-name #greeting {
+  border-bottom-color: transparent;
+}
+
+/* Hide pencil hint when CTA is showing */
+#greeting-wrap.no-name #greeting-edit-hint {
+  display: none;
+}
+
+@keyframes ctaPulse {
+  0%   { transform: scale(1);    box-shadow: 0 0 0 0   rgba(127, 183, 126, 0.4); }
+  50%  { transform: scale(1.04); box-shadow: 0 0 0 6px rgba(127, 183, 126, 0); }
+  100% { transform: scale(1);    box-shadow: 0 0 0 0   rgba(127, 183, 126, 0); }
+}
+
+/* On mobile: always show a subtle tap indicator (no hover available) */
+@media (hover: none) {
+  #greeting-edit-hint {
+    opacity: 0.6;
+  }
+  #greeting-wrap:hover #greeting-edit-hint {
+    opacity: 0.6;
+  }
 }
 
 /* Inline name edit row — hidden by default, shown via JS removing [hidden] */
@@ -668,85 +726,120 @@ input[type="url"]:focus-visible {
 
 
 /* =============================================================================
-   11. Quick Links
+   11. Quick Links — iOS-style cards
    Requirements: 6.1, 6.3
    ============================================================================= */
 
 #links-container {
   display: flex;
   flex-wrap: wrap;
-  gap: calc(var(--space) * 1);
+  gap: calc(var(--space) * 1.5);
   margin-top: calc(var(--space) * 1);
 }
 
-/* Individual link card */
+/* iOS-style card: icon bubble + label + delete */
 .link-card {
-  display: inline-flex;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   gap: calc(var(--space) * 0.75);
-  padding: 0;
-  background-color: var(--color-bg);
-  border-radius: var(--radius-control);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  padding: calc(var(--space) * 1.5) calc(var(--space) * 1.25) calc(var(--space) * 1.25);
+  background: var(--color-surface);
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06);
+  width: 80px;
+  position: relative;
   transition:
-    background-color var(--transition),
     transform var(--transition),
-    box-shadow var(--transition);
-  max-width: 100%;
-  overflow: hidden;
+    box-shadow var(--transition),
+    background-color var(--transition);
+  cursor: pointer;
 }
 
 .link-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px) scale(1.04);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.13), 0 2px 6px rgba(0,0,0,0.07);
 }
 
-/* Anchor fills most of the card — fully clickable */
+.link-card:active {
+  transform: scale(0.96);
+}
+
+/* Colored icon bubble */
+.link-icon-bubble {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--link-color, var(--color-primary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--link-color, var(--color-primary)) 50%, transparent);
+  flex-shrink: 0;
+}
+
+.link-icon-bubble svg {
+  width: 26px;
+  height: 26px;
+}
+
+.link-icon-letter {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+/* Anchor — name label below icon */
 .link-card .link-card-anchor {
-  flex: 1;
-  min-width: 0;
-  padding: calc(var(--space) * 1) calc(var(--space) * 1.5);
-  font-size: 0.875rem;
+  display: block;
+  text-decoration: none;
+  text-align: center;
+  width: 100%;
+}
+
+.link-card-name {
+  font-size: 0.72rem;
   font-weight: 500;
-  color: var(--color-primary);
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  text-decoration: none;
   display: block;
+  max-width: 68px;
 }
 
-.link-card .link-card-anchor:hover {
-  text-decoration: underline;
-}
-
-.link-card .link-card-anchor:focus-visible {
+.link-card .link-card-anchor:focus-visible .link-icon-bubble {
   outline: 3px solid var(--color-accent);
-  outline-offset: -2px;
-  border-radius: 4px;
+  outline-offset: 2px;
 }
 
-/* Delete button inside link card — reset all global button styles */
+/* Delete button — small X in top-right corner, hidden until hover */
 .link-card .btn-delete-link {
-  flex-shrink: 0;
-  padding: calc(var(--space) * 0.5);
-  margin-right: calc(var(--space) * 0.5);
-  width: 26px;
-  height: 26px;
-  background-color: transparent !important;
-  color: var(--text-secondary) !important;
-  border: 1px solid transparent !important;
-  border-radius: 6px;
-  box-shadow: none !important;
-  transform: none !important;
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border-radius: 50%;
+  background-color: #e05c5c !important;
+  color: #fff !important;
+  border: 2px solid var(--color-surface) !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
+  transform: scale(0) !important;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.link-card:hover .btn-delete-link {
+  transform: scale(1) !important;
 }
 
 .link-card .btn-delete-link:hover {
-  background-color: rgba(232, 100, 100, 0.15) !important;
-  color: #e05c5c !important;
-  border-color: #e05c5c !important;
-  transform: none !important;
-  box-shadow: none !important;
+  background-color: #c94a4a !important;
+  transform: scale(1.15) !important;
 }
 
 
