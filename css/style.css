@@ -1,73 +1,53 @@
 /* =============================================================================
    css/style.css — Todo Life Dashboard
-   Sections:
-     1. CSS Custom Properties (Design Tokens) — Light & Dark Themes
-     2. CSS Reset & Base Styles
-     3. Typography
-     4. Layout — Header
-     5. Layout — Main Grid
-     6. Card / Section Styles
-     7. Button Styles
-     8. Input Styles
-     9. Timer Display
-    10. To-Do List
-    11. Quick Links
-    12. Error Messages
-    13. Theme Toggle Button
-    14. Utility Classes
-    15. Responsive — Mobile
+   Spring Minimal design system — professional, balanced, mewah
    ============================================================================= */
-
 
 /* =============================================================================
-   1. CSS Custom Properties (Design Tokens) — Light & Dark Themes
-   Requirements: 7.3, 7.4
+   1. Design Tokens
    ============================================================================= */
-
 :root {
-  /* Light mode palette */
   --color-primary:   #7FB77E;
   --color-accent:    #F7C8A0;
   --color-bg:        #FFF9F5;
   --color-surface:   #FFFFFF;
+  --color-border:    #EDE8E3;
   --text-primary:    #2F2F2F;
   --text-secondary:  #6B6B6B;
+  --text-muted:      #A0A0A0;
 
-  /* Layout tokens */
-  --max-width:       1200px;
-  --radius-card:     16px;
+  --max-width:       1160px;
+  --radius-card:     20px;
   --radius-control:  10px;
   --space:           8px;
-  --shadow-card:     0 10px 25px rgba(0, 0, 0, 0.1);
-  --transition:      0.25s ease;
+  --shadow-card:     0 2px 12px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.05);
+  --shadow-hover:    0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
+  --transition:      0.22s ease;
 }
 
 [data-theme="dark"] {
-  /* Dark mode palette overrides */
   --color-primary:   #5C8D89;
   --color-accent:    #E8A87C;
-  --color-bg:        #1E1E1E;
-  --color-surface:   #2A2A2A;
-  --text-primary:    #F5F5F5;
-  --text-secondary:  #B0B0B0;
+  --color-bg:        #161618;
+  --color-surface:   #1E1E22;
+  --color-border:    #2E2E34;
+  --text-primary:    #F0F0F0;
+  --text-secondary:  #A0A0A8;
+  --text-muted:      #606068;
+  --shadow-card:     0 2px 12px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.2);
+  --shadow-hover:    0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2);
 }
 
-
 /* =============================================================================
-   2. CSS Reset & Base Styles
+   2. Reset & Base
    ============================================================================= */
-
-*,
-*::before,
-*::after {
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-/* Smooth color transition on all elements during theme switch.
-   The .theme-transitioning class is added by JS only during the toggle,
-   so page-load does NOT flash a transition. */
+/* Theme transition — only active during toggle, not on page load */
 .theme-transitioning *,
 .theme-transitioning *::before,
 .theme-transitioning *::after {
@@ -75,94 +55,64 @@
     background-color 0.35s ease,
     color 0.35s ease,
     border-color 0.35s ease,
-    box-shadow 0.35s ease,
-    fill 0.35s ease,
-    stroke 0.35s ease !important;
+    box-shadow 0.35s ease !important;
 }
 
-html {
-  font-size: 16px;
-  scroll-behavior: smooth;
-}
+html { font-size: 16px; scroll-behavior: smooth; }
 
 body {
   background-color: var(--color-bg);
   color: var(--text-primary);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  line-height: 1.6;
   min-height: 100vh;
   transition: background-color var(--transition), color var(--transition);
 }
 
-ul {
-  list-style: none;
-}
-
-a {
-  color: var(--color-primary);
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
+ul { list-style: none; }
+a  { color: var(--color-primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
 
 /* =============================================================================
    3. Typography
    ============================================================================= */
-
-h1 {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
 h2 {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
   margin-bottom: calc(var(--space) * 2);
 }
 
-p {
-  color: var(--text-secondary);
-}
-
-/* Clock time — large display */
+/* Clock */
 #clock {
-  font-size: 2.5rem;
+  font-size: 2.8rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: -0.02em;
   color: var(--text-primary);
-  line-height: 1.1;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
-/* Date line */
 #date {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--text-secondary);
-  margin-top: calc(var(--space) * 0.5);
+  margin-top: 2px;
+  font-weight: 400;
 }
-
-/* Greeting line — now inside #greeting-wrap, styled in section 4 */
-
 
 /* =============================================================================
-   4. Layout — Header
-   Requirements: 8.1
+   4. Header
    ============================================================================= */
-
 header {
   background-color: var(--color-surface);
-  box-shadow: var(--shadow-card);
-  /* Not sticky — scrolls with page */
-  transition: background-color var(--transition), box-shadow var(--transition);
-  animation: headerFadeIn 0.5s ease both;
+  border-bottom: 1px solid var(--color-border);
+  animation: headerFadeIn 0.45s ease both;
 }
 
 @keyframes headerFadeIn {
-  from { opacity: 0; transform: translateY(-12px); }
+  from { opacity: 0; transform: translateY(-10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -173,118 +123,78 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: calc(var(--space) * 2);
+  gap: calc(var(--space) * 3);
 }
 
 .clock-greeting {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--space) * 0.5);
+  gap: 4px;
 }
 
-/* Greeting wrap — inline edit trigger */
+/* Greeting wrap */
 #greeting-wrap {
   display: inline-flex;
   align-items: center;
   gap: calc(var(--space) * 0.75);
   cursor: pointer;
   border-radius: 8px;
-  padding: 2px 4px;
+  padding: 3px 6px 3px 2px;
+  margin-left: -2px;
   transition: background-color var(--transition);
-  /* Make tap target large enough on mobile */
-  min-height: 36px;
+  min-height: 32px;
 }
 
-#greeting-wrap:hover,
-#greeting-wrap:focus-visible {
-  background-color: rgba(127, 183, 126, 0.1);
-  outline: none;
-}
-
-#greeting-wrap:focus-visible {
-  outline: 2px solid var(--color-accent);
-}
+#greeting-wrap:hover { background-color: rgba(127,183,126,0.1); }
+#greeting-wrap:focus-visible { outline: 2px solid var(--color-accent); border-radius: 8px; }
 
 #greeting {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--color-primary);
-  font-weight: 500;
-  border-bottom: 1px dashed transparent;
-  transition: border-color var(--transition);
+  font-weight: 600;
 }
 
-#greeting-wrap:hover #greeting {
-  border-bottom-color: var(--color-primary);
-}
-
-/* Small pencil hint — desktop hover only */
 #greeting-edit-hint {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
+  font-size: 0.7rem;
+  color: var(--text-muted);
   opacity: 0;
   transition: opacity var(--transition);
   user-select: none;
 }
 
-#greeting-wrap:hover #greeting-edit-hint {
-  opacity: 1;
-}
+#greeting-wrap:hover #greeting-edit-hint { opacity: 1; }
 
-/* CTA label — shown only when no name is set (.no-name class) */
+/* No-name CTA */
 #greeting-cta {
   display: none;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-primary);
-  background: rgba(127, 183, 126, 0.12);
+  background: rgba(127,183,126,0.12);
   border: 1.5px dashed var(--color-primary);
   border-radius: 20px;
-  padding: 3px 10px;
+  padding: 2px 10px;
   white-space: nowrap;
-  animation: ctaPulse 2s ease-in-out 0.8s 3; /* pulses 3 times then stops */
+  animation: ctaPulse 2s ease-in-out 0.8s 3;
 }
 
-#greeting-wrap.no-name #greeting-cta {
-  display: inline-block;
-}
-
-/* Hide the dashed underline on greeting when CTA is showing */
-#greeting-wrap.no-name #greeting {
-  border-bottom-color: transparent;
-}
-
-/* Hide pencil hint when CTA is showing */
-#greeting-wrap.no-name #greeting-edit-hint {
-  display: none;
-}
+#greeting-wrap.no-name #greeting-cta  { display: inline-block; }
+#greeting-wrap.no-name #greeting-edit-hint { display: none; }
 
 @keyframes ctaPulse {
-  0%   { transform: scale(1);    box-shadow: 0 0 0 0   rgba(127, 183, 126, 0.4); }
-  50%  { transform: scale(1.04); box-shadow: 0 0 0 6px rgba(127, 183, 126, 0); }
-  100% { transform: scale(1);    box-shadow: 0 0 0 0   rgba(127, 183, 126, 0); }
+  0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(127,183,126,0.4); }
+  50%     { transform: scale(1.04); box-shadow: 0 0 0 6px rgba(127,183,126,0); }
 }
 
-/* On mobile: always show a subtle tap indicator (no hover available) */
-@media (hover: none) {
-  #greeting-edit-hint {
-    opacity: 0.6;
-  }
-  #greeting-wrap:hover #greeting-edit-hint {
-    opacity: 0.6;
-  }
-}
-
-/* Inline name edit row — hidden by default, shown via JS removing [hidden] */
-#name-edit-row[hidden] {
-  display: none;
-}
+/* Name edit row */
+#name-edit-row[hidden] { display: none; }
 
 #name-edit-row {
   display: flex;
   align-items: center;
   gap: calc(var(--space) * 1);
-  margin-top: calc(var(--space) * 0.5);
-  animation: fadeSlideIn 0.2s ease both;
+  margin-top: 4px;
+  animation: fadeSlideIn 0.18s ease both;
 }
 
 @keyframes fadeSlideIn {
@@ -293,7 +203,7 @@ header {
 }
 
 #name-edit-row input[type="text"] {
-  max-width: 200px;
+  max-width: 190px;
   flex: none;
 }
 
@@ -302,59 +212,78 @@ header {
   min-width: unset;
 }
 
+/* Theme toggle */
+#btn-theme-toggle {
+  background-color: transparent;
+  color: var(--text-secondary);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-control);
+  padding: calc(var(--space) * 1) calc(var(--space) * 1.25);
+  flex-shrink: 0;
+  transition: background-color var(--transition), border-color var(--transition), color var(--transition), transform var(--transition);
+}
+
+#btn-theme-toggle:hover {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+/* Mobile: always show hint */
+@media (hover: none) {
+  #greeting-edit-hint { opacity: 0.5; }
+}
 
 /* =============================================================================
-   5. Layout — Main Grid
-   Requirements: 8.1, 8.2
+   5. Main Layout — intentional 3-column desktop grid
    ============================================================================= */
-
 main {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: calc(var(--space) * 3);
+  padding: calc(var(--space) * 4) calc(var(--space) * 3);
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  /* Desktop: Pomodoro narrow | Todo wide | Links medium */
+  grid-template-columns: 280px 1fr 300px;
   gap: calc(var(--space) * 3);
   align-items: start;
 }
 
-
 /* =============================================================================
-   6. Card / Section Styles
-   Requirements: 8.3, 8.4, 8.5, 8.6, 8.8
+   6. Cards
    ============================================================================= */
-
 main > section {
   background-color: var(--color-surface);
   border-radius: var(--radius-card);
+  border: 1px solid var(--color-border);
   box-shadow: var(--shadow-card);
   padding: calc(var(--space) * 3);
   transition:
     background-color var(--transition),
+    border-color var(--transition),
     box-shadow var(--transition),
     transform var(--transition);
   animation: cardFadeIn 0.4s ease both;
 }
 
 @keyframes cardFadeIn {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-main > section:nth-child(2) { animation-delay: 0.05s; }
-main > section:nth-child(3) { animation-delay: 0.1s; }
+main > section:nth-child(1) { animation-delay: 0s; }
+main > section:nth-child(2) { animation-delay: 0.06s; }
+main > section:nth-child(3) { animation-delay: 0.12s; }
 
 main > section:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.13);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+  border-color: rgba(127,183,126,0.3);
 }
 
-
 /* =============================================================================
-   7. Button Styles
-   Requirements: 8.3, 8.6, 8.7, 9.3
+   7. Buttons
    ============================================================================= */
-
 button {
   display: inline-flex;
   align-items: center;
@@ -364,139 +293,93 @@ button {
   border: none;
   border-radius: var(--radius-control);
   background-color: var(--color-primary);
-  color: var(--color-surface);
-  font-size: 0.875rem;
+  color: #fff;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition:
-    background-color var(--transition),
-    transform var(--transition),
-    box-shadow var(--transition);
+  transition: background-color var(--transition), transform var(--transition), box-shadow var(--transition);
   white-space: nowrap;
 }
 
 button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-  background-color: var(--color-accent);
-  color: var(--text-primary);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+  filter: brightness(1.08);
 }
 
-button:active {
-  transform: translateY(0);
-  box-shadow: none;
-}
+button:active { transform: translateY(0); box-shadow: none; filter: none; }
 
-/* Visible focus state for keyboard navigation */
 button:focus-visible {
-  outline: 3px solid var(--color-accent);
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
 button:disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
+  filter: none;
 }
-
-/* Timer control buttons — slightly smaller */
-.timer-controls {
-  display: flex;
-  gap: calc(var(--space) * 1);
-  margin-top: calc(var(--space) * 2);
-  flex-wrap: wrap;
-}
-
-/* Todo input row */
-.todo-input-row {
-  display: flex;
-  gap: calc(var(--space) * 1);
-  margin-bottom: calc(var(--space) * 1.5);
-  flex-wrap: wrap;
-}
-
-/* Links input row */
-.links-input-row {
-  display: flex;
-  gap: calc(var(--space) * 1);
-  margin-bottom: calc(var(--space) * 1.5);
-  flex-wrap: wrap;
-}
-
 
 /* =============================================================================
-   8. Input Styles
-   Requirements: 8.3, 8.6, 8.9, 9.3
+   8. Inputs
    ============================================================================= */
-
 input[type="text"],
 input[type="url"] {
   flex: 1;
   min-width: 0;
   padding: calc(var(--space) * 1) calc(var(--space) * 1.5);
-  border: 2px solid var(--color-surface);
+  border: 1.5px solid var(--color-border);
   border-radius: var(--radius-control);
   background-color: var(--color-bg);
   color: var(--text-primary);
   font-size: 0.875rem;
-  transition:
-    border-color var(--transition),
-    background-color var(--transition),
-    box-shadow var(--transition);
+  transition: border-color var(--transition), box-shadow var(--transition);
   outline: none;
 }
 
 input[type="text"]::placeholder,
-input[type="url"]::placeholder {
-  color: var(--text-secondary);
-}
+input[type="url"]::placeholder { color: var(--text-muted); }
 
-/* Accent color on focus */
 input[type="text"]:focus,
 input[type="url"]:focus {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(247, 200, 160, 0.35);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(127,183,126,0.2);
 }
-
-/* Dark mode focus ring uses dark accent */
-[data-theme="dark"] input[type="text"]:focus,
-[data-theme="dark"] input[type="url"]:focus {
-  box-shadow: 0 0 0 3px rgba(232, 168, 124, 0.35);
-}
-
-/* Visible focus state for keyboard navigation */
-input[type="text"]:focus-visible,
-input[type="url"]:focus-visible {
-  outline: none; /* handled by border + box-shadow above */
-}
-
 
 /* =============================================================================
-   9. Timer Display
-   Requirements: 4.1
+   9. Pomodoro Timer
    ============================================================================= */
-
 #timer-display {
-  font-size: 3rem;
+  font-size: 3.5rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--color-primary);
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
   text-align: center;
-  margin: calc(var(--space) * 1) 0;
+  margin: calc(var(--space) * 2) 0 calc(var(--space) * 1);
   font-variant-numeric: tabular-nums;
-  transition: color var(--transition);
+  line-height: 1;
 }
 
+.timer-controls {
+  display: flex;
+  gap: calc(var(--space) * 1);
+  margin-top: calc(var(--space) * 2);
+  justify-content: center;
+}
 
-/* ── Timer done pulse animation ── */
+.timer-controls button {
+  flex: 1;
+  font-size: 0.8rem;
+  padding: calc(var(--space) * 1) calc(var(--space) * 1.25);
+}
+
+/* Timer done pulse */
 @keyframes timerDonePulse {
-  0%   { color: var(--color-primary); transform: scale(1); }
-  20%  { color: #7FB77E; transform: scale(1.08); text-shadow: 0 0 20px rgba(127,183,126,0.7); }
-  40%  { color: var(--color-primary); transform: scale(1); }
-  60%  { color: #7FB77E; transform: scale(1.05); text-shadow: 0 0 14px rgba(127,183,126,0.5); }
-  80%  { color: var(--color-primary); transform: scale(1); }
-  100% { color: var(--color-primary); transform: scale(1); text-shadow: none; }
+  0%,100% { color: var(--text-primary); transform: scale(1); }
+  25%     { color: var(--color-primary); transform: scale(1.07); text-shadow: 0 0 20px rgba(127,183,126,0.6); }
+  75%     { color: var(--color-primary); transform: scale(1.04); }
 }
 
 #timer-display.timer-done-pulse {
@@ -505,68 +388,34 @@ input[type="url"]:focus-visible {
 
 /* =============================================================================
    10. To-Do List
-   Requirements: 5.4, 5.5, 5.6
    ============================================================================= */
 
-#todo-list {
+/* Input row */
+.todo-input-row {
   display: flex;
-  flex-direction: column;
   gap: calc(var(--space) * 1);
-  margin-top: calc(var(--space) * 1);
+  margin-bottom: calc(var(--space) * 1.5);
 }
 
-/* Individual task item */
-.todo-item {
-  display: flex;
-  align-items: center;
-  gap: calc(var(--space) * 1);
-  padding: calc(var(--space) * 1) calc(var(--space) * 1.5);
-  background-color: var(--color-bg);
-  border-radius: var(--radius-control);
-  transition: background-color var(--transition);
-}
-
-/* Checkbox */
-.todo-item input[type="checkbox"] {
-  flex-shrink: 0;
-  width: 18px;
-  height: 18px;
-  accent-color: var(--color-primary);
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-/* Completed task — strikethrough */
-.todo-item.completed .task-text {
-  text-decoration: line-through;
-  color: var(--text-secondary);
-}
-
-/* ── Progress score ── */
-#todo-progress {
-  margin-bottom: calc(var(--space) * 2);
-}
-
-#todo-progress[hidden] {
-  display: none;
-}
+/* Progress */
+#todo-progress { margin-bottom: calc(var(--space) * 2); }
+#todo-progress[hidden] { display: none; }
 
 .progress-header {
   display: flex;
   align-items: center;
   gap: calc(var(--space) * 1);
   margin-bottom: calc(var(--space) * 0.75);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
 }
 
 #progress-emoji {
-  font-size: 1.1rem;
+  font-size: 1rem;
   line-height: 1;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 #progress-emoji.bump {
-  animation: emojiBump 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: emojiBump 0.4s cubic-bezier(0.34,1.56,0.64,1);
 }
 
 @keyframes emojiBump {
@@ -576,49 +425,39 @@ input[type="url"]:focus-visible {
   100% { transform: scale(1) rotate(0deg); }
 }
 
-#progress-label {
-  flex: 1;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
+#progress-label { flex: 1; color: var(--text-secondary); font-weight: 500; }
 
 #progress-pct {
   font-weight: 700;
   color: var(--color-primary);
   min-width: 2.5rem;
   text-align: right;
-  transition: color 0.3s ease;
 }
 
-/* Track */
 .progress-track {
   width: 100%;
-  height: 10px;
-  background-color: var(--color-bg);
+  height: 8px;
+  background-color: var(--color-border);
   border-radius: 99px;
   overflow: hidden;
-  border: 1.5px solid rgba(127, 183, 126, 0.25);
 }
 
-/* Fill */
 #progress-fill {
   height: 100%;
   width: 0%;
   border-radius: 99px;
   background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
-  transition: width 0.5s cubic-bezier(0.34, 1.2, 0.64, 1);
+  transition: width 0.5s cubic-bezier(0.34,1.2,0.64,1);
   position: relative;
 }
 
-/* Shimmer on the fill */
 #progress-fill::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.35) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
   background-size: 200% 100%;
   animation: shimmer 2s linear infinite;
-  border-radius: inherit;
 }
 
 @keyframes shimmer {
@@ -626,61 +465,110 @@ input[type="url"]:focus-visible {
   to   { background-position: -200% center; }
 }
 
-/* 100% complete — golden glow */
 #progress-fill.all-done {
   background: linear-gradient(90deg, #7FB77E, #f9d56e, #F7C8A0);
 }
 
-/* ── Task completion celebration ── */
-@keyframes taskBounce {
-  0%   { transform: scale(1); }
-  30%  { transform: scale(1.06); box-shadow: 0 0 0 4px rgba(127, 183, 126, 0.35); }
-  55%  { transform: scale(0.97); }
-  75%  { transform: scale(1.02); }
-  100% { transform: scale(1); box-shadow: none; }
+/* Task list */
+#todo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: calc(var(--space) * 1);
 }
 
-.task-celebrate {
-  animation: taskBounce 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--space) * 1);
+  padding: calc(var(--space) * 1) calc(var(--space) * 1.25);
+  background-color: var(--color-bg);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  transition: background-color var(--transition), border-color var(--transition);
 }
 
-/* Edit / delete buttons inside todo items — icon-only, clean SVG */
+.todo-item:hover {
+  border-color: var(--color-border);
+}
+
+.todo-item input[type="checkbox"] {
+  flex-shrink: 0;
+  width: 17px;
+  height: 17px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.todo-item .task-text {
+  flex: 1;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  word-break: break-word;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 4px;
+  padding: 1px 3px;
+  transition: color var(--transition);
+}
+
+.todo-item .task-text:hover { background-color: rgba(127,183,126,0.1); }
+
+.todo-item.completed .task-text {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+/* Task action buttons */
 .todo-item .btn-edit,
 .todo-item .btn-delete {
   flex-shrink: 0;
-  padding: calc(var(--space) * 0.625);
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
   background-color: transparent;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: 7px;
   box-shadow: none;
-  position: relative;
+  opacity: 0;
+  transition: opacity var(--transition), background-color var(--transition), color var(--transition), border-color var(--transition), transform var(--transition);
 }
 
+.todo-item:hover .btn-edit,
+.todo-item:hover .btn-delete { opacity: 1; }
+
 .todo-item .btn-edit:hover {
-  background-color: rgba(127, 183, 126, 0.15);
+  background-color: rgba(127,183,126,0.15);
   color: var(--color-primary);
   border-color: var(--color-primary);
   transform: translateY(-1px);
 }
 
 .todo-item .btn-delete:hover {
-  background-color: rgba(232, 100, 100, 0.12);
+  background-color: rgba(224,92,92,0.12);
   color: #e05c5c;
   border-color: #e05c5c;
   transform: translateY(-1px);
 }
 
-/* Active edit state — button stays highlighted */
-.todo-item .btn-edit.is-editing {
-  background-color: rgba(127, 183, 126, 0.2);
-  color: var(--color-primary);
-  border-color: var(--color-primary);
+.todo-item .btn-save {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background-color: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  box-shadow: none;
 }
 
-/* Inline edit input */
+.todo-item .btn-save:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
 .todo-item .edit-input {
   flex: 1;
   min-width: 0;
@@ -688,47 +576,25 @@ input[type="url"]:focus-visible {
   font-size: 0.875rem;
 }
 
-/* Save button during inline edit */
-.todo-item .btn-save {
-  flex-shrink: 0;
-  padding: calc(var(--space) * 0.625);
-  width: 30px;
-  height: 30px;
-  background-color: var(--color-primary);
-  color: var(--color-surface);
-  border: none;
-  border-radius: 8px;
-  box-shadow: none;
+/* Celebration */
+@keyframes taskBounce {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.05); box-shadow: 0 0 0 4px rgba(127,183,126,0.3); }
+  60%  { transform: scale(0.98); }
+  100% { transform: scale(1); box-shadow: none; }
 }
 
-.todo-item .btn-save:hover {
-  background-color: var(--color-accent);
-  color: var(--text-primary);
-  transform: translateY(-1px);
-}
-
-/* Task text clickable for toggle */
-.todo-item .task-text {
-  flex: 1;
-  font-size: 0.9rem;
-  color: var(--text-primary);
-  word-break: break-word;
-  transition: color var(--transition);
-  cursor: pointer;
-  user-select: none;
-  border-radius: 4px;
-  padding: 2px 4px;
-}
-
-.todo-item .task-text:hover {
-  background-color: rgba(127, 183, 126, 0.1);
-}
-
+.task-celebrate { animation: taskBounce 0.45s cubic-bezier(0.36,0.07,0.19,0.97) both; }
 
 /* =============================================================================
-   11. Quick Links — iOS-style cards
-   Requirements: 6.1, 6.3
+   11. Quick Links — iOS-style
    ============================================================================= */
+.links-input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: calc(var(--space) * 1);
+  margin-bottom: calc(var(--space) * 1.5);
+}
 
 #links-container {
   display: flex;
@@ -737,59 +603,46 @@ input[type="url"]:focus-visible {
   margin-top: calc(var(--space) * 1);
 }
 
-/* iOS-style card: icon bubble + label + delete */
 .link-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: calc(var(--space) * 0.75);
+  gap: 6px;
   padding: calc(var(--space) * 1.5) calc(var(--space) * 1.25) calc(var(--space) * 1.25);
   background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 18px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06);
-  width: 80px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  width: 78px;
   position: relative;
-  transition:
-    transform var(--transition),
-    box-shadow var(--transition),
-    background-color var(--transition);
   cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
 }
 
 .link-card:hover {
   transform: translateY(-4px) scale(1.04);
-  box-shadow: 0 10px 28px rgba(0,0,0,0.13), 0 2px 6px rgba(0,0,0,0.07);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+  border-color: rgba(127,183,126,0.4);
 }
 
-.link-card:active {
-  transform: scale(0.96);
-}
+.link-card:active { transform: scale(0.96); }
 
-/* Colored icon bubble */
 .link-icon-bubble {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
   background: var(--link-color, var(--color-primary));
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  box-shadow: 0 3px 10px color-mix(in srgb, var(--link-color, var(--color-primary)) 50%, transparent);
   flex-shrink: 0;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
 }
 
-.link-icon-bubble svg {
-  width: 26px;
-  height: 26px;
-}
+.link-icon-bubble svg { width: 24px; height: 24px; }
+.link-icon-letter { font-size: 1.2rem; font-weight: 700; }
 
-.link-icon-letter {
-  font-size: 1.3rem;
-  font-weight: 700;
-}
-
-/* Anchor — name label below icon */
 .link-card .link-card-anchor {
   display: block;
   text-decoration: none;
@@ -798,26 +651,21 @@ input[type="url"]:focus-visible {
 }
 
 .link-card-name {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 500;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   display: block;
-  max-width: 68px;
+  max-width: 66px;
 }
 
-.link-card .link-card-anchor:focus-visible .link-icon-bubble {
-  outline: 3px solid var(--color-accent);
-  outline-offset: 2px;
-}
-
-/* Delete button — small X in top-right corner, hidden until hover */
+/* Delete X — appears on hover */
 .link-card .btn-delete-link {
   position: absolute;
-  top: -6px;
-  right: -6px;
+  top: -7px;
+  right: -7px;
   width: 20px;
   height: 20px;
   padding: 0;
@@ -827,86 +675,41 @@ input[type="url"]:focus-visible {
   border: 2px solid var(--color-surface) !important;
   box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
   transform: scale(0) !important;
-  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1) !important;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.link-card:hover .btn-delete-link {
-  transform: scale(1) !important;
-}
-
-.link-card .btn-delete-link:hover {
-  background-color: #c94a4a !important;
-  transform: scale(1.15) !important;
-}
-
+.link-card:hover .btn-delete-link { transform: scale(1) !important; }
+.link-card .btn-delete-link:hover { background-color: #c94a4a !important; transform: scale(1.15) !important; }
 
 /* =============================================================================
    12. Error Messages
-   Requirements: 5.2, 5.3, 6.2
    ============================================================================= */
-
 .error-msg {
-  font-size: 0.8rem;
-  color: var(--color-accent);
+  font-size: 0.78rem;
+  color: #e05c5c;
   min-height: 1.2em;
   margin-bottom: calc(var(--space) * 0.5);
-  transition: color var(--transition);
 }
-
 
 /* =============================================================================
-   13. Theme Toggle Button
-   Requirements: 7.1, 7.2
+   13. Confirm Dialog
    ============================================================================= */
-
-#btn-theme-toggle {
-  background-color: var(--color-bg);
-  color: var(--text-primary);
-  border: 2px solid var(--color-primary);
-  border-radius: var(--radius-control);
-  padding: calc(var(--space) * 1) calc(var(--space) * 1.5);
-  font-size: 1.1rem;
-  flex-shrink: 0;
-  transition:
-    background-color var(--transition),
-    border-color var(--transition),
-    transform var(--transition);
-}
-
-#btn-theme-toggle:hover {
-  background-color: var(--color-primary);
-  color: var(--color-surface);
-  border-color: var(--color-primary);
-}
-
-#btn-theme-toggle:focus-visible {
-  outline: 3px solid var(--color-accent);
-  outline-offset: 2px;
-}
-
-
-/* =============================================================================
-   13.5 Custom Confirm Dialog
-   ============================================================================= */
-
 .confirm-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(3px);
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: overlayIn 0.18s ease both;
+  animation: overlayIn 0.16s ease both;
 }
 
-.confirm-overlay[hidden] {
-  display: none;
-}
+.confirm-overlay[hidden] { display: none; }
 
 @keyframes overlayIn {
   from { opacity: 0; }
@@ -915,25 +718,26 @@ input[type="url"]:focus-visible {
 
 .confirm-box {
   background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-  padding: calc(var(--space) * 4) calc(var(--space) * 4);
-  max-width: 320px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+  padding: calc(var(--space) * 4);
+  max-width: 300px;
   width: 90%;
   text-align: center;
-  animation: boxIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: boxIn 0.2s cubic-bezier(0.34,1.56,0.64,1) both;
 }
 
 @keyframes boxIn {
-  from { opacity: 0; transform: scale(0.85) translateY(12px); }
+  from { opacity: 0; transform: scale(0.88) translateY(10px); }
   to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .confirm-icon {
-  font-size: 2.2rem;
+  font-size: 2rem;
   display: block;
   margin-bottom: calc(var(--space) * 1.5);
-  animation: iconWiggle 0.4s 0.1s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: iconWiggle 0.4s 0.1s cubic-bezier(0.34,1.56,0.64,1) both;
 }
 
 @keyframes iconWiggle {
@@ -944,7 +748,7 @@ input[type="url"]:focus-visible {
 }
 
 .confirm-msg {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: calc(var(--space) * 3);
@@ -959,102 +763,95 @@ input[type="url"]:focus-visible {
 
 .confirm-btn {
   flex: 1;
-  max-width: 120px;
+  max-width: 110px;
   padding: calc(var(--space) * 1.25) calc(var(--space) * 2);
   border-radius: var(--radius-control);
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
   border: none;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
 }
 
 .confirm-btn--cancel {
   background-color: var(--color-bg);
   color: var(--text-secondary);
-  border: 1.5px solid var(--text-secondary);
+  border: 1.5px solid var(--color-border) !important;
 }
 
 .confirm-btn--cancel:hover {
-  background-color: var(--color-surface);
   color: var(--text-primary);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
 .confirm-btn--ok {
   background-color: #e05c5c;
   color: #fff;
-  border: 1.5px solid transparent;
 }
 
 .confirm-btn--ok:hover {
-  background-color: #c94a4a;
+  filter: brightness(1.1);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(224, 92, 92, 0.35);
+  box-shadow: 0 4px 12px rgba(224,92,92,0.35);
 }
 
 /* =============================================================================
-   14. Utility Classes
-   Requirements: 9.2
+   14. Utilities
    ============================================================================= */
-
-/* Screen-reader only — visually hidden but accessible */
 .sr-only {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
+  clip: rect(0,0,0,0);
   white-space: nowrap;
   border: 0;
 }
 
-
 /* =============================================================================
-   15. Responsive — Mobile
-   Requirements: 8.1, 8.2
+   15. Responsive
    ============================================================================= */
 
-@media (max-width: 600px) {
-  .header-inner {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: calc(var(--space) * 2);
+/* Tablet: 2-column, links below todo */
+@media (max-width: 900px) {
+  main {
+    grid-template-columns: 260px 1fr;
+    grid-template-rows: auto auto;
   }
 
-  #btn-theme-toggle {
-    align-self: flex-end;
+  main > section:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Mobile: single column */
+@media (max-width: 600px) {
+  .header-inner {
+    padding: calc(var(--space) * 2);
+    gap: calc(var(--space) * 1.5);
   }
 
   main {
+    grid-template-columns: 1fr;
     padding: calc(var(--space) * 2);
     gap: calc(var(--space) * 2);
-    /* Single column on small screens */
-    grid-template-columns: 1fr;
   }
 
-  #clock {
-    font-size: 2rem;
-  }
+  #clock { font-size: 2.2rem; }
+  #timer-display { font-size: 2.8rem; }
 
-  #timer-display {
-    font-size: 2.25rem;
-  }
+  .todo-input-row { flex-wrap: wrap; }
 
-  .todo-input-row,
   .links-input-row {
-    flex-direction: column;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
   }
 
-  .todo-input-row button,
   .links-input-row button {
-    width: 100%;
+    grid-column: 1 / -1;
   }
 
-  .clock-greeting input[type="text"] {
-    max-width: 100%;
-  }
+  .timer-controls { justify-content: stretch; }
+  .timer-controls button { flex: 1; }
 }
