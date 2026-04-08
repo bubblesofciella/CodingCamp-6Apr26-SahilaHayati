@@ -275,8 +275,7 @@ export function tick() {
   if (timerSeconds <= 0) {
     clearInterval(timerIntervalId);
     timerIntervalId = null;
-    const btnStart = document.getElementById('btn-start');
-    if (btnStart) btnStart.disabled = false;
+    syncTimerButtons('idle');
     onTimerDone();
     return;
   }
@@ -286,45 +285,72 @@ export function tick() {
 }
 
 /**
+ * Updates Pause and Reset button disabled state based on timer state.
+ * - idle/done: only Start enabled
+ * - running:   Start disabled, Pause + Reset enabled
+ * - paused:    Start (resume) + Reset enabled, Pause disabled
+ */
+function syncTimerButtons(state) {
+  const btnStart = document.getElementById('btn-start');
+  const btnPause = document.getElementById('btn-pause');
+  const btnReset = document.getElementById('btn-reset');
+  if (!btnStart || !btnPause || !btnReset) return;
+
+  if (state === 'idle') {
+    btnStart.disabled = false;
+    btnPause.disabled = true;
+    btnReset.disabled = true;
+  } else if (state === 'running') {
+    btnStart.disabled = true;
+    btnPause.disabled = false;
+    btnReset.disabled = false;
+  } else if (state === 'paused') {
+    btnStart.disabled = false;
+    btnPause.disabled = true;
+    btnReset.disabled = false;
+  }
+}
+
+/**
  * Starts the Pomodoro countdown.
  * Guards against duplicate intervals — returns early if already running.
  */
 export function startTimer() {
   if (timerIntervalId !== null) return;
-  const btnStart = document.getElementById('btn-start');
-  if (btnStart) btnStart.disabled = true;
   timerIntervalId = setInterval(tick, 1000);
+  syncTimerButtons('running');
 }
 
 /**
  * Pauses the Pomodoro countdown at the current value.
- * Clears the interval and re-enables #btn-start.
  */
 export function pauseTimer() {
   clearInterval(timerIntervalId);
   timerIntervalId = null;
-  const btnStart = document.getElementById('btn-start');
-  if (btnStart) btnStart.disabled = false;
+  syncTimerButtons('paused');
 }
 
 /**
  * Resets the Pomodoro timer back to 25:00.
- * Clears any running interval, resets state, and updates the display.
+ * Asks for confirmation first so user doesn't lose progress accidentally.
  */
-export function resetTimer() {
+export async function resetTimer() {
+  // Only confirm if timer has actually started (not already at 25:00 idle)
+  if (timerSeconds < 1500) {
+    const confirmed = await confirmDelete('Reset timer to 25:00?', 'Reset', '↺');
+    if (!confirmed) return;
+  }
   clearInterval(timerIntervalId);
   timerIntervalId = null;
   timerSeconds = 1500;
   const display = document.getElementById('timer-display');
   if (display) display.textContent = '25:00';
-  const btnStart = document.getElementById('btn-start');
-  if (btnStart) btnStart.disabled = false;
+  syncTimerButtons('idle');
 }
 
 /**
- * Initialises the Pomodoro widget:
- * - Sets #timer-display to "25:00"
- * - Wires click listeners for Start, Pause, and Reset buttons
+ * Initialises the Pomodoro widget.
+ * Pause and Reset start disabled — only Start is active at idle.
  */
 export function initPomodoro() {
   const display = document.getElementById('timer-display');
@@ -337,24 +363,34 @@ export function initPomodoro() {
   if (btnStart) btnStart.addEventListener('click', startTimer);
   if (btnPause) btnPause.addEventListener('click', pauseTimer);
   if (btnReset) btnReset.addEventListener('click', resetTimer);
+
+  // Initial state: only Start is clickable
+  syncTimerButtons('idle');
 }
 
 // ─── Confirm Dialog ──────────────────────────────────────────────────────────
 
 /**
- * Shows a cute custom confirm dialog and resolves with true (confirmed) or false (cancelled).
- * @param {string} message - The question to display
+ * Shows a custom confirm dialog.
+ * @param {string} message
+ * @param {string} [okLabel='Delete'] - Label for the confirm button
+ * @param {string} [icon='🗑️'] - Emoji icon shown in the dialog
  * @returns {Promise<boolean>}
  */
-function confirmDelete(message = 'Delete this item?') {
+function confirmDelete(message = 'Delete this item?', okLabel = 'Delete', icon = '🗑️') {
   return new Promise(resolve => {
-    const overlay  = document.getElementById('confirm-overlay');
-    const msgEl    = document.getElementById('confirm-msg');
-    const btnOk    = document.getElementById('confirm-ok');
+    const overlay   = document.getElementById('confirm-overlay');
+    const msgEl     = document.getElementById('confirm-msg');
+    const btnOk     = document.getElementById('confirm-ok');
     const btnCancel = document.getElementById('confirm-cancel');
+    const iconEl    = overlay?.querySelector('.confirm-icon');
     if (!overlay || !btnOk || !btnCancel) { resolve(true); return; }
 
-    if (msgEl) msgEl.textContent = message;
+    if (msgEl)   msgEl.textContent  = message;
+    if (iconEl)  iconEl.textContent = icon;
+    btnOk.textContent = okLabel;
+    // Style: reset uses primary color, delete uses red
+    btnOk.classList.toggle('is-reset', okLabel !== 'Delete');
     overlay.hidden = false;
 
     // Focus the cancel button by default (safer)
@@ -496,6 +532,7 @@ export async function deleteTask(id) {
   saveTasks(tasks);
   const li = document.querySelector(`[data-task-id="${id}"]`);
   if (li) li.remove();
+  applyTaskListVisibility();
   updateProgress();
 }
 
@@ -737,11 +774,48 @@ function updateProgress() {
 }
 
 
+const TASK_VISIBLE_LIMIT = 5;
+let taskListExpanded = false;
+
+/**
+ * Applies the collapsed/expanded visual state to task items beyond the limit.
+ * Uses max-height + opacity transition for a smooth iOS-style reveal.
+ * Does NOT re-render the DOM — just toggles classes.
+ */
+function applyTaskListVisibility() {
+  const list = document.getElementById('todo-list');
+  const toggleBtn = document.getElementById('btn-toggle-tasks');
+  if (!list) return;
+
+  const items = list.querySelectorAll('.todo-item');
+  const overflow = items.length - TASK_VISIBLE_LIMIT;
+  const hasOverflow = overflow > 0;
+
+  items.forEach((item, i) => {
+    if (i >= TASK_VISIBLE_LIMIT) {
+      item.classList.toggle('task-hidden', !taskListExpanded);
+    } else {
+      item.classList.remove('task-hidden');
+    }
+  });
+
+  if (toggleBtn) {
+    toggleBtn.hidden = !hasOverflow;
+    if (hasOverflow) {
+      toggleBtn.textContent = taskListExpanded
+        ? 'Show less'
+        : `Show ${overflow} more task${overflow > 1 ? 's' : ''}`;
+      toggleBtn.setAttribute('aria-expanded', String(taskListExpanded));
+    }
+  }
+}
+
 export function renderTasks() {
   const list = document.getElementById('todo-list');
   if (!list) return;
   list.innerHTML = '';
   tasks.forEach(task => list.appendChild(buildTaskElement(task)));
+  applyTaskListVisibility();
   updateProgress();
 }
 
@@ -759,6 +833,7 @@ export function initTodoList() {
   const input = document.getElementById('todo-input');
   const btnAdd = document.getElementById('btn-add-todo');
   const errorEl = document.getElementById('todo-error');
+  const toggleBtn = document.getElementById('btn-toggle-tasks');
 
   function attemptAdd() {
     const text = input ? input.value : '';
@@ -773,7 +848,16 @@ export function initTodoList() {
       if (errorEl) errorEl.textContent = '';
       if (input) input.value = '';
       const list = document.getElementById('todo-list');
-      if (list) list.appendChild(buildTaskElement(result));
+      if (list) {
+        const el = buildTaskElement(result);
+        list.appendChild(el);
+        // If this item is beyond the limit and list is collapsed, hide it
+        const idx = list.querySelectorAll('.todo-item').length - 1;
+        if (idx >= TASK_VISIBLE_LIMIT && !taskListExpanded) {
+          el.classList.add('task-hidden');
+        }
+      }
+      applyTaskListVisibility();
       updateProgress();
     }
   }
@@ -782,6 +866,13 @@ export function initTodoList() {
   if (input) {
     input.addEventListener('keydown', e => {
       if (e.key === 'Enter') attemptAdd();
+    });
+  }
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', () => {
+      taskListExpanded = !taskListExpanded;
+      applyTaskListVisibility();
     });
   }
 }
