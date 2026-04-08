@@ -660,7 +660,7 @@ input[type="url"]:focus {
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  padding: calc(var(--space) * 1.5) calc(var(--space) * 1.25) calc(var(--space) * 1.25);
+  padding: 0;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 18px;
@@ -695,11 +695,22 @@ input[type="url"]:focus {
 .link-icon-bubble svg { width: 24px; height: 24px; }
 .link-icon-letter { font-size: 1.2rem; font-weight: 700; }
 
-.link-card .link-card-anchor {
-  display: block;
+/* Entire card is clickable — .link-card-inner is the <a> */
+.link-card-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: calc(var(--space) * 1.5) calc(var(--space) * 1.25) calc(var(--space) * 1.25);
   text-decoration: none;
-  text-align: center;
   width: 100%;
+  border-radius: 18px;
+}
+
+.link-card-inner:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 18px;
 }
 
 .link-card-name {
@@ -711,6 +722,7 @@ input[type="url"]:focus {
   text-overflow: ellipsis;
   display: block;
   max-width: 66px;
+  text-align: center;
 }
 
 /* Delete X — appears on hover */

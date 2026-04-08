@@ -948,14 +948,23 @@ const DEFAULT_LINKS = [
 ];
 
 /**
- * Builds a single iOS-style link card with colored icon.
- * @param {{id: string, name: string, url: string, color?: string, icon?: string}} link
- * @returns {HTMLDivElement}
+ * Builds a single iOS-style link card.
+ * The entire card is an <a> tag so any tap/click navigates.
+ * Delete button is absolutely positioned and stops propagation.
  */
 function buildLinkCard(link) {
-  const card = document.createElement('div');
-  card.className = 'link-card';
-  card.dataset.linkId = link.id;
+  // Outer wrapper keeps data-link-id for deleteLink DOM removal
+  const wrapper = document.createElement('div');
+  wrapper.className = 'link-card';
+  wrapper.dataset.linkId = link.id;
+
+  // The whole card is a link
+  const card = document.createElement('a');
+  card.href = link.url;
+  card.target = '_blank';
+  card.rel = 'noopener noreferrer';
+  card.className = 'link-card-inner';
+  card.title = link.name;
 
   // Colored icon bubble
   const iconBubble = document.createElement('div');
@@ -965,36 +974,30 @@ function buildLinkCard(link) {
   if (link.icon) {
     iconBubble.innerHTML = link.icon;
   } else {
-    // Fallback: first letter of name
     iconBubble.textContent = (link.name || '?')[0].toUpperCase();
     iconBubble.classList.add('link-icon-letter');
   }
-
-  const a = document.createElement('a');
-  a.href = link.url;
-  a.target = '_blank';
-  a.rel = 'noopener noreferrer';
-  a.className = 'link-card-anchor';
-  a.title = link.url;
 
   const nameEl = document.createElement('span');
   nameEl.className = 'link-card-name';
   nameEl.textContent = link.name;
 
-  a.appendChild(nameEl);
+  card.append(iconBubble, nameEl);
 
+  // Delete button — absolutely positioned, stops propagation
   const btnDelete = document.createElement('button');
   btnDelete.className = 'btn-delete-link';
   btnDelete.setAttribute('aria-label', 'Delete link');
   btnDelete.title = 'Remove link';
   btnDelete.innerHTML = SVG_LINK_DEL;
   btnDelete.addEventListener('click', (e) => {
+    e.preventDefault();
     e.stopPropagation();
     deleteLink(link.id);
   });
 
-  card.append(iconBubble, a, btnDelete);
-  return card;
+  wrapper.append(card, btnDelete);
+  return wrapper;
 }
 
 /**
