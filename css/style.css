@@ -693,9 +693,14 @@ input[type="url"]:focus {
    ============================================================================= */
 .links-input-row {
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
   gap: calc(var(--space) * 1);
   margin-bottom: calc(var(--space) * 1.5);
+}
+
+.links-input-row button {
+  grid-column: 1 / -1;
 }
 
 #links-container {
