@@ -7,14 +7,14 @@
    1. Design Tokens
    ============================================================================= */
 :root {
-  --color-primary:   #7FB77E;
-  --color-accent:    #F7C8A0;
-  --color-bg:        #FFF9F5;
+  --color-primary:   #512B81;
+  --color-accent:    #C084FC;
+  --color-bg:        #FAF7FF;
   --color-surface:   #FFFFFF;
-  --color-border:    #EDE8E3;
-  --text-primary:    #2F2F2F;
-  --text-secondary:  #6B6B6B;
-  --text-muted:      #A0A0A0;
+  --color-border:    #E9E0F5;
+  --text-primary:    #1E1030;
+  --text-secondary:  #6B5F80;
+  --text-muted:      #A89BBF;
 
   --max-width:       1160px;
   --radius-card:     20px;
@@ -26,16 +26,16 @@
 }
 
 [data-theme="dark"] {
-  --color-primary:   #5C8D89;
-  --color-accent:    #E8A87C;
-  --color-bg:        #161618;
-  --color-surface:   #1E1E22;
-  --color-border:    #2E2E34;
-  --text-primary:    #F0F0F0;
-  --text-secondary:  #A0A0A8;
-  --text-muted:      #606068;
-  --shadow-card:     0 2px 12px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.2);
-  --shadow-hover:    0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2);
+  --color-primary:   #9B59D0;
+  --color-accent:    #C084FC;
+  --color-bg:        #0F0A1A;
+  --color-surface:   #1A1228;
+  --color-border:    #2D2040;
+  --text-primary:    #F0EAF8;
+  --text-secondary:  #A08CC0;
+  --text-muted:      #5C4A78;
+  --shadow-card:     0 2px 12px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3);
+  --shadow-hover:    0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
 }
 
 /* =============================================================================
