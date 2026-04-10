@@ -127,6 +127,8 @@ header {
   align-items: center;
   justify-content: space-between;
   gap: calc(var(--space) * 3);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .clock-greeting {
@@ -246,10 +248,13 @@ main {
   margin: 0 auto;
   padding: calc(var(--space) * 4) calc(var(--space) * 4);
   display: grid;
-  /* Desktop: Pomodoro narrow | Todo wide | Links medium */
+  /* Desktop: Focus Timer narrow | Todo wide | Links medium */
   grid-template-columns: 260px 1fr 280px;
   gap: calc(var(--space) * 3);
   align-items: start;
+  /* Ensure content never touches viewport edge */
+  box-sizing: border-box;
+  width: 100%;
 }
 
 /* =============================================================================
@@ -703,7 +708,11 @@ input[type="url"]:focus {
   gap: calc(var(--space) * 1);
 }
 
-.links-input-row button {
+.links-input-row .link-inputs input {
+  flex: 1;
+}
+
+.links-input-row > button {
   width: 100%;
 }
 
