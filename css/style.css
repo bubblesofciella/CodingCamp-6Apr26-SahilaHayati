@@ -16,7 +16,7 @@
   --text-secondary:  #6B5F80;
   --text-muted:      #A89BBF;
 
-  --max-width:       1160px;
+  --max-width:       1100px;
   --radius-card:     20px;
   --radius-control:  10px;
   --space:           8px;
@@ -122,7 +122,7 @@ header {
 .header-inner {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: calc(var(--space) * 2.5) calc(var(--space) * 3);
+  padding: calc(var(--space) * 2.5) calc(var(--space) * 4);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -244,10 +244,10 @@ header {
 main {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: calc(var(--space) * 4) calc(var(--space) * 3);
+  padding: calc(var(--space) * 4) calc(var(--space) * 4);
   display: grid;
   /* Desktop: Pomodoro narrow | Todo wide | Links medium */
-  grid-template-columns: 280px 1fr 300px;
+  grid-template-columns: 260px 1fr 280px;
   gap: calc(var(--space) * 3);
   align-items: start;
 }
@@ -692,15 +692,19 @@ input[type="url"]:focus {
    11. Quick Links — iOS-style
    ============================================================================= */
 .links-input-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto;
+  display: flex;
+  flex-direction: column;
   gap: calc(var(--space) * 1);
   margin-bottom: calc(var(--space) * 1.5);
 }
 
+.links-input-row .link-inputs {
+  display: flex;
+  gap: calc(var(--space) * 1);
+}
+
 .links-input-row button {
-  grid-column: 1 / -1;
+  width: 100%;
 }
 
 #links-container {
@@ -971,13 +975,8 @@ input[type="url"]:focus {
 
   .todo-input-row { flex-wrap: wrap; }
 
-  .links-input-row {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto;
-  }
-
-  .links-input-row button {
-    grid-column: 1 / -1;
+  .links-input-row .link-inputs {
+    flex-direction: column;
   }
 
   .timer-controls { justify-content: stretch; }
