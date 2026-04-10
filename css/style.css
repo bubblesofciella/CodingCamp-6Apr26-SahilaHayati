@@ -795,9 +795,9 @@ input[type="url"]:focus {
 }
 
 #links-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: calc(var(--space) * 1.5);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
+  gap: calc(var(--space) * 1.5) calc(var(--space) * 1);
   margin-top: calc(var(--space) * 1);
 }
 
@@ -807,11 +807,11 @@ input[type="url"]:focus {
   align-items: center;
   gap: 6px;
   padding: 0;
+  width: 100%;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 18px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  width: 78px;
   position: relative;
   cursor: pointer;
   transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
@@ -867,7 +867,7 @@ input[type="url"]:focus {
   overflow: hidden;
   text-overflow: ellipsis;
   display: block;
-  max-width: 66px;
+  max-width: 90%;
   text-align: center;
 }
 
