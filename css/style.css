@@ -150,7 +150,7 @@ header {
   min-height: 32px;
 }
 
-#greeting-wrap:hover { background-color: rgba(127,183,126,0.1); }
+#greeting-wrap:hover { background-color: rgba(81,43,129,0.08); }
 #greeting-wrap:focus-visible { outline: 2px solid var(--color-accent); border-radius: 8px; }
 
 #greeting {
@@ -175,7 +175,7 @@ header {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-primary);
-  background: rgba(127,183,126,0.12);
+  background: rgba(81,43,129,0.1);
   border: 1.5px dashed var(--color-primary);
   border-radius: 20px;
   padding: 2px 10px;
@@ -187,8 +187,8 @@ header {
 #greeting-wrap.no-name #greeting-edit-hint { display: none; }
 
 @keyframes ctaPulse {
-  0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(127,183,126,0.4); }
-  50%     { transform: scale(1.04); box-shadow: 0 0 0 6px rgba(127,183,126,0); }
+  0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(81,43,129,0.35); }
+  50%     { transform: scale(1.04); box-shadow: 0 0 0 6px rgba(81,43,129,0); }
 }
 
 /* Name edit row */
@@ -286,7 +286,7 @@ main > section:nth-child(3) { animation-delay: 0.12s; }
 main > section:hover {
   transform: translateY(-3px);
   box-shadow: var(--shadow-hover);
-  border-color: rgba(127,183,126,0.3);
+  border-color: rgba(81,43,129,0.25);
 }
 
 /* =============================================================================
@@ -353,7 +353,7 @@ input[type="url"]::placeholder { color: var(--text-muted); }
 input[type="text"]:focus,
 input[type="url"]:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(127,183,126,0.2);
+  box-shadow: 0 0 0 3px rgba(81,43,129,0.15);
 }
 
 /* =============================================================================
@@ -599,7 +599,7 @@ input[type="url"]:focus {
 }
 
 #progress-fill.all-done {
-  background: linear-gradient(90deg, #7FB77E, #f9d56e, #F7C8A0);
+  background: linear-gradient(90deg, #512B81, #C084FC, #E9D5FF);
 }
 
 /* Task list */
@@ -662,7 +662,7 @@ input[type="url"]:focus {
   transition: color var(--transition);
 }
 
-.todo-item .task-text:hover { background-color: rgba(127,183,126,0.1); }
+.todo-item .task-text:hover { background-color: rgba(81,43,129,0.08); }
 
 .todo-item.completed .task-text {
   text-decoration: line-through;
@@ -689,7 +689,7 @@ input[type="url"]:focus {
 .todo-item:hover .btn-delete { opacity: 1; }
 
 .todo-item .btn-edit:hover {
-  background-color: rgba(127,183,126,0.15);
+  background-color: rgba(81,43,129,0.12);
   color: var(--color-primary);
   border-color: var(--color-primary);
   transform: translateY(-1px);
@@ -737,7 +737,7 @@ input[type="url"]:focus {
   padding: calc(var(--space) * 0.875) calc(var(--space) * 2);
   background: transparent;
   color: var(--color-primary);
-  border: 1.5px solid rgba(127,183,126,0.35);
+  border: 1.5px solid rgba(81,43,129,0.3);
   border-radius: var(--radius-control);
   font-size: 0.82rem;
   font-weight: 600;
@@ -751,7 +751,7 @@ input[type="url"]:focus {
 }
 
 .btn-toggle-tasks:hover {
-  background-color: rgba(127,183,126,0.1);
+  background-color: rgba(81,43,129,0.08);
   border-color: var(--color-primary);
   transform: translateY(-1px);
   box-shadow: none;
@@ -764,7 +764,7 @@ input[type="url"]:focus {
 /* Celebration */
 @keyframes taskBounce {
   0%   { transform: scale(1); }
-  30%  { transform: scale(1.05); box-shadow: 0 0 0 4px rgba(127,183,126,0.3); }
+  30%  { transform: scale(1.05); box-shadow: 0 0 0 4px rgba(81,43,129,0.25); }
   60%  { transform: scale(0.98); }
   100% { transform: scale(1); box-shadow: none; }
 }
@@ -820,7 +820,7 @@ input[type="url"]:focus {
 .link-card:hover {
   transform: translateY(-4px) scale(1.04);
   box-shadow: 0 10px 24px rgba(0,0,0,0.12);
-  border-color: rgba(127,183,126,0.4);
+  border-color: rgba(81,43,129,0.35);
 }
 
 .link-card:active { transform: scale(0.96); }
@@ -902,6 +902,75 @@ input[type="url"]:focus {
   color: #e05c5c;
   min-height: 1.2em;
   margin-bottom: calc(var(--space) * 0.5);
+}
+
+/* Success message — same layout as error-msg but green */
+.success-msg {
+  font-size: 0.78rem;
+  color: var(--color-primary);
+  min-height: 1.2em;
+  margin-bottom: calc(var(--space) * 0.5);
+}
+
+/* Empty states */
+.todo-empty-state,
+.links-empty-state {
+  list-style: none;
+  text-align: center;
+  padding: calc(var(--space) * 3) calc(var(--space) * 2);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.5;
+  user-select: none;
+}
+
+.todo-empty-state::before {
+  content: '📋';
+  display: block;
+  font-size: 1.6rem;
+  margin-bottom: calc(var(--space) * 1);
+  opacity: 0.5;
+}
+
+.links-empty-state::before {
+  content: '🔗';
+  display: block;
+  font-size: 1.6rem;
+  margin-bottom: calc(var(--space) * 1);
+  opacity: 0.5;
+}
+
+/* Keyboard shortcut toast */
+.shortcut-toast {
+  position: fixed;
+  bottom: calc(var(--space) * 3);
+  right: calc(var(--space) * 3);
+  background: rgba(30, 16, 48, 0.92);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: calc(var(--space) * 0.875) calc(var(--space) * 1.75);
+  border-radius: 99px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  z-index: 9000;
+  pointer-events: none;
+  animation: toastFadeIn 0.2s ease both;
+  white-space: nowrap;
+}
+
+.shortcut-toast.toast-out {
+  animation: toastFadeOut 0.3s ease both;
+}
+
+@keyframes toastFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toastFadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(8px); }
 }
 
 /* =============================================================================
@@ -1012,7 +1081,7 @@ input[type="url"]:focus {
 }
 
 .confirm-btn--ok.is-reset:hover {
-  box-shadow: 0 4px 12px rgba(127,183,126,0.35);
+  box-shadow: 0 4px 12px rgba(81,43,129,0.35);
 }
 
 /* =============================================================================

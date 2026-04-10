@@ -217,7 +217,7 @@ function notifyTimerDone() {
   if (!('Notification' in window)) return;
 
   function send() {
-    new Notification('🍅 Pomodoro complete!', {
+    new Notification('⏱️ Focus session complete!', {
       body: 'Great focus session. Time for a break!',
       icon: '', // no external icon needed
     });
@@ -636,6 +636,15 @@ export async function deleteTask(id) {
   saveTasks(tasks);
   const li = document.querySelector(`[data-task-id="${id}"]`);
   if (li) li.remove();
+  // Show empty state if no tasks remain after filtering
+  const list = document.getElementById('todo-list');
+  if (list && getSortedTasks().length === 0) {
+    list.innerHTML = '';
+    const msg = tasks.length === 0
+      ? 'No tasks yet. Add one above ↑'
+      : 'No tasks match this filter';
+    showEmptyState(list, msg);
+  }
   applyTaskListVisibility();
   updateProgress();
 }
@@ -904,6 +913,7 @@ function applyTaskListVisibility() {
   const toggleBtn = document.getElementById('btn-toggle-tasks');
   if (!list) return;
 
+  // Only count real task items, not the empty-state placeholder
   const items = list.querySelectorAll('.todo-item');
   const overflow = items.length - TASK_VISIBLE_LIMIT;
   const hasOverflow = overflow > 0;
@@ -927,11 +937,31 @@ function applyTaskListVisibility() {
   }
 }
 
+/**
+ * Creates an empty-state <li> with the given message.
+ * @param {HTMLUListElement} list - The <ul> to append to
+ * @param {string} message
+ */
+function showEmptyState(list, message) {
+  const li = document.createElement('li');
+  li.className = 'todo-empty-state';
+  li.textContent = message;
+  list.appendChild(li);
+}
+
 export function renderTasks() {
   const list = document.getElementById('todo-list');
   if (!list) return;
   list.innerHTML = '';
-  getSortedTasks().forEach(task => list.appendChild(buildTaskElement(task)));
+  const sorted = getSortedTasks();
+  if (sorted.length === 0) {
+    const msg = tasks.length === 0
+      ? 'No tasks yet. Add one above ↑'
+      : 'No tasks match this filter';
+    showEmptyState(list, msg);
+  } else {
+    sorted.forEach(task => list.appendChild(buildTaskElement(task)));
+  }
   applyTaskListVisibility();
   updateProgress();
 }
@@ -966,6 +996,9 @@ export function initTodoList() {
       if (input) input.value = '';
       const list = document.getElementById('todo-list');
       if (list) {
+        // Remove empty state if present
+        const emptyEl = list.querySelector('.todo-empty-state');
+        if (emptyEl) emptyEl.remove();
         const el = buildTaskElement(result);
         list.appendChild(el);
         // If this item is beyond the limit and list is collapsed, hide it
@@ -1137,7 +1170,14 @@ export function renderLinks() {
   const container = document.getElementById('links-container');
   if (!container) return;
   container.innerHTML = '';
-  links.forEach(link => container.appendChild(buildLinkCard(link)));
+  if (links.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'links-empty-state';
+    empty.textContent = 'No links yet. Add your favorites above ↑';
+    container.appendChild(empty);
+  } else {
+    links.forEach(link => container.appendChild(buildLinkCard(link)));
+  }
 }
 
 /**
@@ -1175,15 +1215,24 @@ export function initQuickLinks() {
     btnAdd.addEventListener('click', () => {
       const name = nameInput ? nameInput.value.trim() : '';
       const url = urlInput ? urlInput.value.trim() : '';
-      if (!name) { if (errorEl) errorEl.textContent = 'Link name cannot be empty.'; return; }
+      if (!name) { if (errorEl) { errorEl.className = 'error-msg'; errorEl.textContent = 'Link name cannot be empty.'; } return; }
       const result = addLink(name, url);
       if (result === null) {
-        if (errorEl) errorEl.textContent = 'URL must start with http:// or https://';
+        if (errorEl) { errorEl.className = 'error-msg'; errorEl.textContent = 'URL must start with http:// or https://'; }
       } else {
-        if (errorEl) errorEl.textContent = '';
+        if (errorEl) {
+          errorEl.className = 'success-msg';
+          errorEl.textContent = 'Link added ✓';
+          setTimeout(() => { errorEl.textContent = ''; errorEl.className = 'error-msg'; }, 2000);
+        }
         if (nameInput) nameInput.value = '';
         if (urlInput) urlInput.value = '';
-        if (container) container.appendChild(buildLinkCard(result));
+        if (container) {
+          // Remove empty state if present
+          const emptyEl = container.querySelector('.links-empty-state');
+          if (emptyEl) emptyEl.remove();
+          container.appendChild(buildLinkCard(result));
+        }
       }
     });
   }
@@ -1270,6 +1319,79 @@ export function initTheme() {
   if (btn) btn.addEventListener('click', toggleTheme);
 }
 
+// ─── Keyboard Shortcuts ───────────────────────────────────────────────────────
+
+/**
+ * Shows a small toast notification at the bottom-right of the screen.
+ * Auto-dismisses after 1.5 seconds with a fade-out animation.
+ * @param {string} message
+ */
+function showShortcutToast(message) {
+  // Remove any existing toast immediately
+  const existing = document.querySelector('.shortcut-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.className = 'shortcut-toast';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+
+  // Start fade-out slightly before removal
+  const DISPLAY_MS = 1500;
+  const FADE_MS = 300;
+  setTimeout(() => {
+    toast.classList.add('toast-out');
+    setTimeout(() => toast.remove(), FADE_MS);
+  }, DISPLAY_MS - FADE_MS);
+}
+
+/**
+ * Registers global keyboard shortcuts:
+ * - Alt+N  → focus the todo input
+ * - Alt+T  → start/pause timer toggle
+ * - Alt+R  → reset timer
+ * - Alt+D  → toggle dark/light mode
+ */
+export function initKeyboardShortcuts() {
+  document.addEventListener('keydown', e => {
+    if (!e.altKey) return;
+
+    switch (e.key.toLowerCase()) {
+      case 'n': {
+        e.preventDefault();
+        const input = document.getElementById('todo-input');
+        if (input) { input.focus(); input.select(); }
+        showShortcutToast('⌨️ Alt+N — Focus task input');
+        break;
+      }
+      case 't': {
+        e.preventDefault();
+        if (timerIntervalId !== null) {
+          pauseTimer();
+          showShortcutToast('⌨️ Alt+T — Timer paused');
+        } else {
+          startTimer();
+          showShortcutToast('⌨️ Alt+T — Timer started');
+        }
+        break;
+      }
+      case 'r': {
+        e.preventDefault();
+        resetTimer();
+        showShortcutToast('⌨️ Alt+R — Timer reset');
+        break;
+      }
+      case 'd': {
+        e.preventDefault();
+        toggleTheme();
+        const isDark = document.documentElement.dataset.theme === 'dark';
+        showShortcutToast(`⌨️ Alt+D — ${isDark ? 'Dark' : 'Light'} mode`);
+        break;
+      }
+    }
+  });
+}
+
 // ─── Bootstrap ───────────────────────────────────────────────────────────────
 // Initialise all widgets when the DOM is ready.
 // initTheme runs first to apply the saved theme before any content renders.
@@ -1280,4 +1402,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initPomodoro();
   initTodoList();
   initQuickLinks();
+  initKeyboardShortcuts();
 });
