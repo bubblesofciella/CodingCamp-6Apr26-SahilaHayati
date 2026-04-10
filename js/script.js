@@ -255,10 +255,49 @@ export let timerSeconds = 1500;
 /** @type {number|null} Stored interval ID; null when timer is not running */
 export let timerIntervalId = null;
 
+// localStorage keys for timer persistence
+const TIMER_KEY_SECONDS  = 'dashboard_timer_seconds';
+const TIMER_KEY_STATE    = 'dashboard_timer_state';
+const TIMER_KEY_STAMP    = 'dashboard_timer_stamp';
+const TIMER_KEY_DURATION = 'dashboard_timer_duration'; // custom duration in seconds
+
+/** Total duration for the current session (default 25 min) */
+let timerDuration = 1500;
+
+/** Show/hide the duration row based on timer state */
+function syncDurationRow(state) {
+  const row = document.getElementById('timer-duration-row');
+  if (!row) return;
+  row.classList.toggle('hidden', state !== 'idle');
+}
+
+/** Persist current timer seconds and state to localStorage */
+function saveTimerState(state) {
+  try {
+    localStorage.setItem(TIMER_KEY_SECONDS, String(timerSeconds));
+    localStorage.setItem(TIMER_KEY_STATE, state);
+    localStorage.setItem(TIMER_KEY_DURATION, String(timerDuration));
+    if (state === 'running') {
+      localStorage.setItem(TIMER_KEY_STAMP, String(Date.now()));
+    } else {
+      localStorage.removeItem(TIMER_KEY_STAMP);
+    }
+  } catch (e) { /* ignore */ }
+}
+
+/** Clear timer state from localStorage */
+function clearTimerState() {
+  try {
+    localStorage.removeItem(TIMER_KEY_SECONDS);
+    localStorage.removeItem(TIMER_KEY_STATE);
+    localStorage.removeItem(TIMER_KEY_STAMP);
+    // Keep TIMER_KEY_DURATION so next session uses same custom duration
+  } catch (e) { /* ignore */ }
+}
+
 /**
  * Formats a number of seconds as a MM:SS string.
- * Different from formatTime (which takes a Date); this takes raw seconds.
- * @param {number} seconds - Total seconds remaining
+ * @param {number} seconds
  * @returns {string} e.g. "25:00" or "04:59"
  */
 export function formatTimerDisplay(seconds) {
@@ -268,27 +307,26 @@ export function formatTimerDisplay(seconds) {
 }
 
 /**
- * Decrements timerSeconds by one and updates #timer-display.
- * If the timer has reached zero, clears the interval and re-enables #btn-start.
+ * Decrements timerSeconds by one, updates display, and persists state.
  */
 export function tick() {
   if (timerSeconds <= 0) {
     clearInterval(timerIntervalId);
     timerIntervalId = null;
     syncTimerButtons('idle');
+    clearTimerState();
     onTimerDone();
     return;
   }
   timerSeconds -= 1;
   const display = document.getElementById('timer-display');
   if (display) display.textContent = formatTimerDisplay(timerSeconds);
+  // Save every tick so refresh restores exact position
+  saveTimerState('running');
 }
 
 /**
- * Updates Pause and Reset button disabled state based on timer state.
- * - idle/done: only Start enabled
- * - running:   Start disabled, Pause + Reset enabled
- * - paused:    Start (resume) + Reset enabled, Pause disabled
+ * Updates button disabled state and duration row visibility based on timer state.
  */
 function syncTimerButtons(state) {
   const btnStart = document.getElementById('btn-start');
@@ -309,62 +347,128 @@ function syncTimerButtons(state) {
     btnPause.disabled = true;
     btnReset.disabled = false;
   }
+  syncDurationRow(state);
 }
 
-/**
- * Starts the Pomodoro countdown.
- * Guards against duplicate intervals — returns early if already running.
- */
+/** Starts the countdown. Guards against duplicate intervals. */
 export function startTimer() {
   if (timerIntervalId !== null) return;
   timerIntervalId = setInterval(tick, 1000);
   syncTimerButtons('running');
+  saveTimerState('running');
 }
 
-/**
- * Pauses the Pomodoro countdown at the current value.
- */
+/** Pauses the countdown. */
 export function pauseTimer() {
   clearInterval(timerIntervalId);
   timerIntervalId = null;
   syncTimerButtons('paused');
+  saveTimerState('paused');
 }
 
-/**
- * Resets the Pomodoro timer back to 25:00.
- * Asks for confirmation first so user doesn't lose progress accidentally.
- */
+/** Resets to custom duration with confirmation if progress exists. */
 export async function resetTimer() {
-  // Only confirm if timer has actually started (not already at 25:00 idle)
-  if (timerSeconds < 1500) {
-    const confirmed = await confirmDelete('Reset timer to 25:00?', 'Reset', '↺');
+  if (timerSeconds < timerDuration) {
+    const confirmed = await confirmDelete('Reset timer?', 'Reset', '↺');
     if (!confirmed) return;
   }
   clearInterval(timerIntervalId);
   timerIntervalId = null;
-  timerSeconds = 1500;
+  timerSeconds = timerDuration;
   const display = document.getElementById('timer-display');
-  if (display) display.textContent = '25:00';
+  if (display) display.textContent = formatTimerDisplay(timerDuration);
   syncTimerButtons('idle');
+  clearTimerState();
 }
 
 /**
- * Initialises the Pomodoro widget.
- * Pause and Reset start disabled — only Start is active at idle.
+ * Initialises the Focus Timer widget.
+ * Restores persisted state and wires custom duration controls.
  */
 export function initPomodoro() {
-  const display = document.getElementById('timer-display');
-  if (display) display.textContent = '25:00';
-
-  const btnStart = document.getElementById('btn-start');
-  const btnPause = document.getElementById('btn-pause');
-  const btnReset = document.getElementById('btn-reset');
+  const display    = document.getElementById('timer-display');
+  const btnStart   = document.getElementById('btn-start');
+  const btnPause   = document.getElementById('btn-pause');
+  const btnReset   = document.getElementById('btn-reset');
+  const minInput   = document.getElementById('timer-minutes');
+  const btnInc     = document.getElementById('btn-duration-inc');
+  const btnDec     = document.getElementById('btn-duration-dec');
 
   if (btnStart) btnStart.addEventListener('click', startTimer);
   if (btnPause) btnPause.addEventListener('click', pauseTimer);
   if (btnReset) btnReset.addEventListener('click', resetTimer);
 
-  // Initial state: only Start is clickable
+  // ── Custom duration controls ──────────────────────────────────────────────
+
+  /** Clamp minutes to [1, 120] and update timerDuration + display */
+  function applyDuration(minutes) {
+    const clamped = Math.max(1, Math.min(120, Math.round(minutes)));
+    timerDuration = clamped * 60;
+    timerSeconds  = timerDuration;
+    if (minInput) minInput.value = String(clamped);
+    if (display)  display.textContent = formatTimerDisplay(timerDuration);
+    try { localStorage.setItem(TIMER_KEY_DURATION, String(timerDuration)); } catch (e) {}
+  }
+
+  if (btnInc) btnInc.addEventListener('click', () => {
+    applyDuration(parseInt(minInput?.value || '25', 10) + 1);
+  });
+
+  if (btnDec) btnDec.addEventListener('click', () => {
+    applyDuration(parseInt(minInput?.value || '25', 10) - 1);
+  });
+
+  if (minInput) {
+    minInput.addEventListener('change', () => {
+      applyDuration(parseInt(minInput.value, 10) || 25);
+    });
+    minInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') minInput.blur();
+    });
+  }
+
+  // ── Restore persisted state ───────────────────────────────────────────────
+  try {
+    const savedSeconds  = parseInt(localStorage.getItem(TIMER_KEY_SECONDS), 10);
+    const savedState    = localStorage.getItem(TIMER_KEY_STATE);
+    const savedStamp    = parseInt(localStorage.getItem(TIMER_KEY_STAMP), 10);
+    const savedDuration = parseInt(localStorage.getItem(TIMER_KEY_DURATION), 10);
+
+    // Restore custom duration first
+    if (!isNaN(savedDuration) && savedDuration >= 60 && savedDuration <= 7200) {
+      timerDuration = savedDuration;
+      if (minInput) minInput.value = String(Math.round(timerDuration / 60));
+    }
+
+    if (savedState && !isNaN(savedSeconds) && savedSeconds > 0 && savedSeconds <= timerDuration) {
+      if (savedState === 'running' && !isNaN(savedStamp)) {
+        const elapsed = Math.floor((Date.now() - savedStamp) / 1000);
+        timerSeconds = Math.max(0, savedSeconds - elapsed);
+      } else {
+        timerSeconds = savedSeconds;
+      }
+
+      if (display) display.textContent = formatTimerDisplay(timerSeconds);
+
+      if (timerSeconds <= 0) {
+        syncTimerButtons('idle');
+        clearTimerState();
+        onTimerDone();
+      } else if (savedState === 'running') {
+        timerIntervalId = setInterval(tick, 1000);
+        syncTimerButtons('running');
+      } else if (savedState === 'paused') {
+        syncTimerButtons('paused');
+      } else {
+        syncTimerButtons('idle');
+      }
+      return;
+    }
+  } catch (e) { /* fall through */ }
+
+  // Default fresh state
+  timerSeconds = timerDuration;
+  if (display) display.textContent = formatTimerDisplay(timerDuration);
   syncTimerButtons('idle');
 }
 

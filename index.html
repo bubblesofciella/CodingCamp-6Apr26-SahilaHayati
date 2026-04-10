@@ -56,6 +56,25 @@
     <section aria-labelledby="pomodoro-heading">
       <h2 id="pomodoro-heading">Focus Timer</h2>
       <div id="timer-display" aria-live="polite">25:00</div>
+
+      <!-- Custom duration — only visible when timer is idle -->
+      <div id="timer-duration-row" class="timer-duration-row">
+        <label for="timer-minutes" class="timer-duration-label">Duration</label>
+        <div class="timer-duration-input-wrap">
+          <button id="btn-duration-dec" class="btn-duration-step" aria-label="Decrease minutes" title="−1 min">−</button>
+          <input
+            type="number"
+            id="timer-minutes"
+            min="1"
+            max="120"
+            value="25"
+            aria-label="Timer duration in minutes"
+          />
+          <button id="btn-duration-inc" class="btn-duration-step" aria-label="Increase minutes" title="+1 min">+</button>
+          <span class="timer-duration-unit">min</span>
+        </div>
+      </div>
+
       <div class="timer-controls">
         <button id="btn-start" aria-label="Start timer" title="Start">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
